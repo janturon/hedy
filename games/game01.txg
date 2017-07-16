@@ -1,0 +1,32 @@
+intro >>>
+>[LTutoriál č.1:]
+>
+>Hra se skládá z uzlu ([Bnode]) a mapy ([Bmap]).
+>
+>[LUzel] se skládá z [Didentifikátoru] (jedinečný název, může obsahovat malá a velká písmena bez diakritiky a číslice, první musí být písmeno), za nímž je [Dpopis uzlu] uzavřený v uvozovkách (ne apostrofech), který uvidí hráč. Před identifikátorem může být jeden z následujících [Dmodifikátorů]:
+>- [Dinitial]: označuje počáteční uzel, odkud hra začíná.
+>- [Dfinal]: koncový uzel. Jakmile se do něj hráč dostane, hra končí.
+>
+>Syntaxe uzlu je tedy:
+>[B(modifikátor) identifikátor ''popis uzlu'']
+>
+>[LMapa] obsahuje cesty mezi uzly, kam se hráč může vydat. Syntaxe je dvojí:
+>[Bodkud + kam ''popis1'' ''popis2'']
+>[Bodkud > kam ''popis1'']
+>
+>[B+] označuje obousměrnou cestu s popisem [Dpopis1] pro cestu odkud->kam a s popisem [Dpopis2] pro cestu kam->odkud. [B>] je jednosměrná cesta odkud->kam.
+
+initial node vez >>>
+>Jsi princezna zavřená ve věži. Ráda by ses dostala na svobodu a princ nikde (nejspíš je v hospodě). Budeš si muset pomoci sama.
+>
+>Jsi v místnosti bez oken osvětlené loučemi, které ozařují masivní dubové dveře pobité železem.
+
+final node nadvori >>>
+>Vší silou jsi zatlačila do dveří a... To je ale klika! Dveře nebyly zamčené a pomalu se se skřípěním otevřely. Stráže asi jsou v hospodě s princem.
+>
+>Tiše jsi proklouzla, přeběhla přes nádvoří a utekla pryč z tohoto zlovolného opilého království vstříc svobodě a světu.
+>
+>A pamatuješ si ještě, co je to [Didentifikátor]? Jestli ne, pak jsi looser a musíš si to zahrát znovu.
+
+map
+	vez > nadvori "zkusit otevřít dveře"

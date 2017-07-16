@@ -1,0 +1,82 @@
+intro >>>
+>[LTutoriál č.4:]
+>
+>Akci lze skrýt nastavením lokální proměnné [D@.hide] na 1. Jinak v tomto tutoriálu není už nic nového. Hra je ale napsaná malinko složitějším způsobem: při přechodu z uzlu do uzlu se zavolá [Dmod move], který může pohyb hráče zablokovat. Akce [DSebrat] a [DPoužít] se zobrazí, jen pokud něco sebrat a použít jde.
+>
+>Zkus se mrknout do zdrojáku a jestli ho pochopíš, máš dost talentu na to stát se programátorem. A jestli už se v tom ztrácíš, nevěš hlavu: pořád můžeš napsat svůj vlastní skvělý příběh, a požádat o doprogramování někoho zkušenějšího."
+
+### ACTIONS ###
+
+action go "Jít"
+  @block:= 0
+  $there:= $here
+  select $there from paths ask("Kam chceš jít?")
+  run move
+  if @block=0 then $here:= $there
+  @block:= 0
+
+node bag
+
+action pick "Sebrat"
+  $stuff:= null
+  select $stuff from items filter($place=$here) ask("Co chceš sebrat?")
+  check $stuff=item
+  $stuff.$place:= bag
+  message "Sebral jsi {$stuff.~text}."
+  run pickeval
+  run useeval
+
+mod pickeval
+  pick.@hide:= 1
+  $stuff:= null
+  select $stuff from items filter($place=$here)
+  check $stuff=item
+  pick.@hide:= 0
+
+action use "Použít"
+  $stuff:= null
+  select $stuff from items filter($place=bag) ask("Co chceš použít?")
+  if $stuff=item then run $stuff.$use
+  run useeval
+
+mod useeval
+  use.@hide:= 1
+  $stuff:= null
+  select $stuff from items filter($place=bag)
+  check $stuff=item
+  use.@hide:= 0
+
+
+### GAME ###
+
+mod init
+  message "Let's play the game!"
+  run pickeval
+  run useeval
+
+initial node mistnost "Jsi v místnosti."
+  .@opened:= 0
+  .~label:= "místnost"
+final node ven "Jsi venku."
+
+map
+  mistnost > ven "ze dveří"
+
+mod move
+  run pickeval
+  if $here=mistnost and $there=ven then run mistnost.$zamceno
+
+mod mistnost.$zamceno
+  message "test zamčeno: {mistnost.@opened}"
+  check mistnost.@opened=0
+  message "Dveře jsou zamčené."
+  @block:= 1
+
+item key "Klíč"
+  .$place:= mistnost
+
+mod key.$use
+  check $here=mistnost
+  mistnost.@opened:= 1
+  message "Odemknul jsi dveře!"
+

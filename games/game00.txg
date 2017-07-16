@@ -1,0 +1,15 @@
+intro >>>
+>[LTutoriál č.0]
+>
+>Na začátku hry může být [Dintro]: představení hry hráči. Syntaxe je
+>[Bintro "popis"]
+>
+>Popis musí být v uvozovkách (ne apostrofech). Konec řádky se vloží znakem [B>] nakonci řádky (za uvozovky). Popis může obsahovat i barvy (viz zdrojový kód této "hry").
+>- [BL] (light): [Lsvětlejší] než text, vhodná na nadpisy
+>- [BD] (dark): [Dtmavší] než text, vhodná místo kurzívy
+>- [BB] (blue): [Bmodrá]
+>- [BY] (yellow): [Yžlutá]
+>- zelená je vyhrazena pro ovládání hry (viz dole)
+>- červená je vyhrazena pro chyby v kódu hry (chyba se zobrazí po stisku klávesy, tato hra není hotová!)
+>
+>Ostatní barvy konzole neumí nebo nejsou dobře čitelné na černém pozadí.

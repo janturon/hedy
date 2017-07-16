@@ -1,0 +1,12 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <vector>
+#include <map>
+#include "u8char.h"
+#include "str.h"
+#include "console.h"
+#include "game.h"
+#include "objects.h"
+#include "actions.h"
+#include "varcontainer.h"
+#include "parser.h"

@@ -1,0 +1,64 @@
+intro >>>
+>[LTutoriál č.3:]
+>
+>Kromě uzlů může hra obsahovat také předměty ([Bitems]). Předmět je druh objektu, se kterým se dá dělat spousta věcí. V tomto tutoriálu jsme naprogramovali akce [Dseber] a [Dpoužij].
+>
+>V [Dselect]u můžeme používat (před [Dask]) také filtry ([Bfilter]). Ty obsahují podmínku na [Blokální proměnnou] (identifikátor začíná na tečku, proměnná patří objektu, objekty mohou mít tuto proměnnou vzájemně různou). Zde u akce [Dseber] je např. použito:
+>
+>[B select $predmet from items filter($misto=$here) ask("Co chceš sebrat?")]
+>
+>Příkaz vybere všechny předměty a ponechá ve výběru pouze ty, které mají lokální proměnnou [D$misto] nastavenu na místo, kde se hráč nachází. Pak se hráče zeptá, který z těchto předmětů chce vzít a výsledek uloží do proměnné [D$predmet]. Pokud hráč nic nevybere (stiskne ESC nebo na místě nic není) [D$predmet] zůstane nezměněn. Proto jsme ho před tím nastavili na hodnotu [Bnull] (viz zdroják), což je speciální objekt, který není uzel, předmět, ani žádný jiný typ.
+
+mod init
+  message >>>
+  >Dále hra obsahuje [Dmody] ([Bmod]), což je soubor příkazů spustitelných příkazem [Brun], který se může nacházet v akci nebo modu. Mod je také objekt, tj. může být přiřazen do proměnné (v kód např. [Dklic.$pouzij])
+  >
+  >Pokud napíšeme mod [Dinit], spustí se tento hned po zahájení hry. Tato zpráva je tímto modem vytvořená.
+  >
+  >Když už jsme u zpráv: dají se do nich vkládat obsahy proměnných (do složených závorek) a dají se v nich použít [Dalternativy] (svislítka). Program pak vybere náhodně jednu z alternativ (zkus použít klíč ve sklepě). Mrkni do zdrojáku, jak se to přesně zapisuje.
+  >
+  >A teď už konečně zpátky ke hře: Hra se spustí klávesou [L§] (nebo libovolnou jinou).
+
+# sem si dává hráč věci
+
+item batoh
+
+action go "Jít"
+	select $here from paths ask("Kam chceš jít?")
+
+action pick "Seber"
+  $predmet:= null
+  select $predmet from items filter($misto=$here) ask("Co chceš sebrat?")
+  check $predmet=item
+  $predmet.$misto:= batoh
+  message "Sebrala jsi {$predmet.~text}."
+
+action use "Použij"
+  $predmet:= null
+  select $predmet from items filter($misto=batoh) ask("Co chceš použít?")
+  if $predmet=item then run $predmet.$pouzij
+
+initial node vez >>>
+>Jsi princezna zavřená ve věži. Ráda by ses dostala na svobodu a princ nikde (nejspíš je v hospodě). Budeš si muset pomoci sama.
+>
+>Jsi v místnosti bez oken osvětlené loučemi, které ozařují masivní [Lzamčené] dubové dveře pobité železem.
+
+node sklep "Sešla jsi po schodech do zatuchlého sklepa. Není to zrovna místo, kde bys chtěla trávit dovolenou."
+
+final node nadvori >>>
+>A jsi zase na svobodě. Tradá do světa, klíč si necháš jako suvenýr.
+>
+>A jak jsi na tom s pamětí? Co je to podle tebe [Dmod], [Dlokální proměnná] a [Dalternativa]? Nevíš? Tak tradá zpátky na začátek! A jestli už víš, mohla bys tu hru zkusit rozšířit: co kdyby princezna ve sklepě našla také krumpáč, kterým by se ze sklepa mohla prokopat na svobodu? A jestli i tohle zvládneš, což takhle napsat svou vlastní hru?
+
+item klic "Klíč"
+  .$misto:= sklep
+
+mod klic.$pouzij
+  if not $here=vez then message "A jak bys asi tady chtěla použít klíč?|Přemýšlíš, jak ten klíč použít zrovna tady.|Použila jsi klíč a vzduch ve sklepě byl stále stejně zatuchlý.|Použila jsi klíč jako inspiraci a složila jsi hádanku ''leze, leze po železe, nedá pokoj, až tam vleze''."
+  check $here=vez
+  message "Odemkla jsi dveře!"
+  vez.~text:= "Jsi v místnosti bez oken osvětlené loučemi, které ozařují masivní [Lodemčené] dubové dveře pobité železem."
+  path vez > nadvori "dveřmi ven"
+
+map
+	vez + sklep "dolů do sklepa" "zpátky nahoru"

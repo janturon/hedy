@@ -1,0 +1,3 @@
+/*
+	This file is here to not have an extra rule in makefile.
+*/

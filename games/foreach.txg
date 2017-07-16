@@ -1,0 +1,13 @@
+intro "Test foreach"
+
+action testovat "Testovat"
+	message "Testuju ({testovat.@hide})"
+	foreach $node from nodes filter(~text>"uzel") message "Vidím {$node}"
+
+action nic "Nic"
+	testovat.@hide:= 1
+	message "nic neděláš"
+
+initial node start "Startovní uzel"
+node n1 "uzen 1"
+node n2 "uzel 2"

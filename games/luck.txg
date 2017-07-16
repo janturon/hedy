@@ -1,0 +1,9 @@
+@max:= 50
+
+action try "Zkus štìstí"
+  @ok:= 0
+  if luck @max % then @ok:=1
+  if @ok=1 then message "lucky!"
+  if @ok=0 then message "unlucky :-("
+
+initial node start "Test"

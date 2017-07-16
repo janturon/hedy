@@ -1,0 +1,51 @@
+intro >>>
+>[LTutoriál č.2:]
+>
+>Ve hře také můžeme používat [Bproměnné] a akce ([Baction]).
+>
+>[LProměnná] může být [Dčíslo] (začíná na [B@]), [Dtext] (začíná na [B~]) nebo [Dobjekt] (začíná na [B$], obsahuje uzly). Hodnoty proměnným přiřazujeme [Doperátorem] [B:][B=]: na levé straně je identifikátor proměnné, na pravé hodnota. Text píšeme do uvozovek. Příklad:
+>
+>[B@mojeCislo:][B= 42]
+>[B~mujText:][B= "čtyřicet dva"]
+>[B$mujObjekt:][B= vez]
+>
+>Proměnné můžeme vkládat do textu do složených závorek, viz zdrojový kód.
+>
+>[LAkce] je činnost hráče. Pokud žádnou nenapíšeme, vytvoří se akce pro pohyb:
+>
+>[Baction "Jít"]
+>[B  select $here from paths ask("Kam chceš jít?")]
+>
+>V následující hře zkus zajít do sklepa dvakrát a všimni si rozdílu. Ten je možný právě díky akcím. Na konci hry si to podrobněji vysvětlíme.
+
+@maKlic:= 0
+~sklepInfo:= "Na zdi visel klíč, který sis vzala za tu újmu, že jsi musela navštívit tak bezútěšné místo."
+
+action go "Jít"
+	select $here from paths ask("Kam chceš jít?")
+	if $here=vez and @maKlic=1 then ~sklepInfo:= "Klíč už máš v kapse, tak co bys tu ještě dělala."
+	check $here=sklep and @maKlic=0
+	@maKlic:= 1
+	path vez > nadvori "ven (poté, co odemkneš ty dveře)"
+
+initial node vez >>>
+>Jsi princezna zavřená ve věži. Ráda by ses dostala na svobodu a princ nikde (nejspíš je v hospodě). Budeš si muset pomoci sama.
+>
+>Jsi v místnosti bez oken osvětlené loučemi, které ozařují masivní dubové dveře pobité železem.
+
+node sklep "Sešla jsi po schodech do zatuchlého sklepa. Není to zrovna místo, kde bys chtěla trávit dovolenou. {~sklepInfo}"
+
+final node nadvori >>>
+>Zasunula jsi klíč do zámku a... To je ale klika! Klíč pasoval. Stráže jsou z toho chlastu asi tak zblblé, že nechávají klíč vevnitř.
+>
+>Tiše jsi proklouzla, přeběhla přes nádvoří a utekla pryč z tohoto hloupého opilého království přečíst si, jak je to s těmi [Bakcemi]: ty obsahují [Dpříkazy] (každý na jednom řádku) a končí prázdnou řádkou. Mrkni do zdrojáku:
+>
+> - [B$here] je objekt ukazující na uzel, kde se hráč nachází
+> - [Bif podmínka then příkaz] vykoná [Dpříkaz], pouze pokud je splněna [Dpodmínka] (porovnání)
+> - [Bcheck podmínka] přeskočí následující [Dpříkazy], pokud [Dpodmínka] neplatí
+> - [Bpath] přidá cestu podobně jako v [Bmap] (je možné cestu i odebrat operátorem [B-])
+>
+>Akce umožňují do hry doprogramovat téměř cokoliv, mrkni do dokumentace. A schválně jestli si ještě pamatuješ, jakého typu mohou být v jazyce [BHedy] proměnné? Jestli ne, tak [Ylevel failed] a začni znovu.
+
+map
+	vez + sklep "dolů do sklepa" "zpátky nahoru"

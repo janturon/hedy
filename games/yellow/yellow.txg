@@ -1,0 +1,48 @@
+intro "Jsi Ash Ketchum, vìènì jedenáctiletı fakan z mìsta Palet. Máš kliku, e tvùj otèím Oak ti dìlá protekci, take nemusíš dìlat fackovacího panáka s metapodem okoloprocházejícím trenérùm, ale máš cestièku vyšlapanou pìknì a k mistru pokémonu."
+
+action jit "Jít"
+  select $here from paths ask("Kam chceš jít?")
+  run update
+
+node batoh
+
+action lecit_doma "Vyléèit pokeše"
+  message "Pøespal jsi v kuchyni. To sis jako myslel, e ti tohle vyléèí tvé domlácené pokeše? Koukej je vyhealovat za tvrdé love v pokécentru, socko!"
+
+mod update
+  lecit_doma.@hide:= 1
+  if $here=palet_doma_kuchyn then lecit_doma.@hide:= 0
+  if $here=route1 and route1.@poprve=1 then run route1.$poprve
+
+initial node palet_doma "Sedíš doma a èumíš jedenáct let do bedny. Dospìl jsi k závìru, e u jsi koneènì kvalifikován bıt mistrem pokémonù. Èas ukázat tìm noobùm, kdo je to poképán. (c) B3holder"
+
+item palet_doma_komp "Poèítaè"
+  ~.see:= "V rohu místnosti stojí poèítaè."
+  ~.check:= "Je to stará desktopová šunka z dob, kdy Satoshi Tajiri programoval svùj první GayBoy Color. S tím køápem se nehodláš tahat, navíc nemá ani bezdrátové napájení. Musíš ho tu nechat."
+  ~.check1:= "V kompu jsi našel POTION, kterı léèí závratnıch 20 hápéèek! Teda jen jeho obrázek. Jak bys asi s tímhle JPGèkem chtìl léèit pokémony?? Jsi sice debil, ale ne a tak velkı!"
+
+item palet_doma_potion "POTION"
+  ~.use:= "Pouil jsi obrázek POTIONu (a u to znamená cokoliv). Krásnı èervenı flakónek, vypadá to jako hopsinková šáva. Jéé, super, jdem se koukat na Gumídky. Tak jsi strávil dalších 11 let a nestal ses mistrem pokémonù. Prohráls! Byl by ale vopruz zaèínat odznova kvùli takové prkotinì, tak hrej dál, jakoby se nic nestalo..."
+
+node palet_doma_kuchyn "Jsi pøízemí svého domova v kuchyni, kde chodí tvoje maminka tam a zpìt. Za celá ta léta, co se budeš honit za odznaky, nevytáhne paty z domu a vdycky, kdy pøijdeš, tak tebe i tvé pokémony nechá pøespat. Takhle se chová mistrynì pokémonu, ty troubo."
+
+node palet_namesti "Jsi na námìstí mìsta z Palet, ale moc palet tu není. Prostì takovı slum, kterému vévodí laboratoø(?) tvého otèíma Oaka. Ale nepustí tì dovnitø, dokud se jako trubka nevydáš sám na sever do hluboké trávy (co je strašnì nebezpeèné dobrodruství). Pøed vıchodem z mìsta je sama doma sexy ségra tvého rivala šampóna Garyho. Z toho taky kouká nìjaké dobrodruství."
+
+node palet_dumgary_pred "Jsi u domku Garyho. Sériová bytovka pøes ulici k vám domù."
+
+node route1 "Jsi na Route 1. Jediná cesta do mìsta Palet, a je zarostlá travou do pùl pasu. Prostì ta nejvìtší prdel svìta, kam nechodí ani pošák."
+  .@poprve:= 1
+
+mod route1.$poprve
+  message "Kdy jsi chtìl odejít z mìsta, vybìhl za tebou profesor Oak. 'Poèkej, ty noobe, nemùeš jen tak chodit vysokou travou. Je to strašnì nebezpeèné! Èum na mì, jak se to dìlá!' Pak vytáhl pokébal, hodil ho do trávy a chytil úasnì vzácného pikachu, kterého najdeš a v elektrárnì (spoiler alert! too late...). Pak tì zprail pohrdlivım pohledem a šel zpìt k laboratoøi. Podaøilo se ti ten pokébal s pikachu nenápadnì ukrást! Jsi pìknı spratek!"
+  route1.@poprve:= 0
+  pikachu0.$misto:= batoh
+
+item pikachu0 "Pikaèu"
+  .~check "lutı køeèek, kterı umí mluvit ''pika-pi''. Oblíbené hrátky zaèínajících trenérù zahrnují leštìní ocasu pikachu ebonitovou tyèí, co vytvoøí neškodnou jiskru. Oakova metoda spoèívá v tom, e mu to ebonitovou tyè zarazíme do [CENSORED], co vygeneruje náboj nìkolika GigaCoulombù, kterı uzemòují zásadnì Rakeáci (tm)."
+
+map
+  palet_doma + palet_doma_kuchyn "dolù" "nahoru"
+  palet_doma_kuchyn + palet_namesti "ven" "domù"
+  palet_namesti + palet_dumgary_pred "ke Garyho domku" "na námìstí"
+  palet_namesti + route1 "na sever"
