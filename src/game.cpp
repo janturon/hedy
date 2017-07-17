@@ -7,6 +7,7 @@ using namespace std;
 Game::Game() : VarContainer(this,"game") {
 	none = new VarContainer(this,"null");
   objects.insert(make_pair("null",none));
+  strs.insert(make_pair("statusbar",""));
 	path = new Path(this);
   intro = "";
 }

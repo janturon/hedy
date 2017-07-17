@@ -8,6 +8,7 @@ int main(int argc, char** argv) {
   srand(time(NULL));
   console_mode(CONSOLE_UTF);
   cursor(false);
+  clear();
 
 	// load game
   if(argc<2) error(E_GAMEMISSING),exit(1);
@@ -62,6 +63,8 @@ void move(Game& game, Node* here) {
 	xstr templ = -here->findStr(".~text");
 	templ.replaceMe("''","\"");
 	wprint(here->srhs(templ));
+  xstr statusbar = -game.findStr("~statusbar");
+  if(statusbar) { puts("\n"); wprint(here->srhs(statusbar)); }
 	puts("\n");
 	Action* chosen;
 	if(game.actions.size()>1) chosen = Action().doPickAsk<Action*>(game.actions,NULL);

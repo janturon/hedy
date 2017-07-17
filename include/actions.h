@@ -25,7 +25,7 @@ protected:
 	bool varOp(str& lval, char op, str& rval);
 
 	void executeLine(xstr& line);
-  void message(xstr& cmd);
+  void message(xstr& cmd, bool strict=false);
 	void showdump(xstr& line);
 
 	// select, foreach

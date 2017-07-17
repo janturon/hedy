@@ -166,7 +166,8 @@ void Mod::run() {
 void Mod::executeLine(xstr& line) {
 	if(!evalIf(line)) return;
 	xstr cmd = ~line;
-  if(cmd.eat("message ")) message(cmd);
+  if(cmd.eat("message! ")) message(cmd,true);
+  else if(cmd.eat("message ")) message(cmd);
 	else if(cmd.eat("set @")) array<int>(cmd);
 	else if(cmd.eat("set ~")) array<xstr>(cmd);
 	else if(cmd.eat("set $")) array<str>(cmd);
@@ -192,11 +193,13 @@ void Mod::showdump(xstr& line) {
 	if(line.eat("vars")) { clear(); g->dump(); clear(); }
 }
 
-void Mod::message(xstr& cmd) {
+void Mod::message(xstr& cmd, bool strict) {
 	xstr msg = cmd.movetext();
-	puts("");
+	if(strict) clear(); else puts("");
   wprint(srhs(msg));
+  if(strict) colprintf("\n\n$GREEN %s $LIGHTGRAY", G_WAIT);
 	getkey();
+  if(strict) clear();
 }
 
 void Mod::dump() {
@@ -368,6 +371,11 @@ int Mod::doPickOneArr(xstr& cmd, Array<int>& array) {
 	else if(cmd.eat("min( @.key )")) {
 		result = -1000000000;
 		for(auto const& kv: array.lines) if(kv.first>result) result = kv.first;
+	}
+	else if(xstr question=cmd.moves("ask!( \"%63[^\"]\" )")) {
+		puts(question);
+		puts("");
+		result = doPickAsk<int>(array.lines,nan,true);
 	}
 	else if(xstr question=cmd.moves("ask( \"%63[^\"]\" )")) {
 		puts(question);
