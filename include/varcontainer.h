@@ -15,6 +15,7 @@ struct VarInfo {
 
 extern VarContainer* none;
 extern int nan;
+extern str nos;
 
 class VarContainer {
   void replaceVars(xstr& result); // (in srhs)
@@ -44,8 +45,8 @@ public:
 
 	// get value of non-parsed objects
   int findInt(const char* cline, int def=nan);
-  str findStr(const char* cline, str def="");
-  VarContainer* findObj(const char* cline, VarContainer* def=NULL);
+  str findStr(const char* cline, str def=nos);
+  VarContainer* findObj(const char* cline, VarContainer* def=none);
 
   VarContainer(Game* game, const str id);
 	virtual str getLabel();

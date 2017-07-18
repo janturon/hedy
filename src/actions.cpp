@@ -7,6 +7,7 @@ using namespace std;
 Mod::Mod(Game* g, const str _id)
   : VarContainer(g,_id) {
   type = 'm';
+  ifcontext = NULL;
 }
 
 Mod* Mod::parseSingleLine(Game* g, xstr& line, char pass) {
@@ -14,6 +15,8 @@ Mod* Mod::parseSingleLine(Game* g, xstr& line, char pass) {
   xstr id = line.movevar();
   if(pass==1) {
     Mod* mod = new Mod(g,id);
+    if(str text = line.movetext()) mod->strs["text"] = text;
+		else mod->strs["text"] = id;
 		VarInfo vi = g->getVar(id);
     g->addMod(mod);
  		if(vi.context!=g) vi.context->objs[vi.name] = mod;
@@ -36,6 +39,10 @@ bool Mod::evalIf(str& s) {
 
 bool Mod::evalCondOr(str& cond) {
   cond.explodeMe(" or ");
+  if(cond.tokens.size()>1) {
+		xstr part = cond(1);
+//    printf("%s:%s:%d",-ifcontext->id,-part,evalCondAnd(part)); getchar();
+  }
   for(long i=0; i<cond.tokens.size(); ++i) {
 		xstr part = cond(i);
 		if(evalCondAnd(part)) return true;
@@ -55,7 +62,8 @@ bool Mod::evalCondAnd(str& cond) {
 bool Mod::evalCondPart(xstr& s) {
   bool result = false;
   if(s.eat("luck ")) result = evalLuck(s);
-  else result = evalEquation(NULL,s);
+  else if(s.eat("noif")) result = noif;
+  else result = evalEquation(s);
   return result;
 }
 
@@ -73,46 +81,36 @@ bool Mod::evalLuck(xstr& s) {
   return result;
 }
 
-bool Mod::evalEquation(VarContainer* context, xstr s) {
+bool Mod::evalEquation(xstr s) {
 	s.trimMe();
 	bool inv = s.eat("not ");
 	xstr Lvar = s.movevar();
 	VarInfo L;
 	try { L = getVar(Lvar); } catch(const char*& ex) { return inv; }
-	if(context!=NULL) L.context = context;
+	if(ifcontext!=NULL) L.context = ifcontext;
 	s.eat(" ");	char op = s.movechar();
 	bool result = false;
-  if(L.type=='@') try {
+  if(L.type=='@') {
 		int lval = getInt(L.name,L.context);
-		int rval = irhs(~s);
-		result = varOp(lval,op,rval);
+    if(lval!=nan) { int rval = irhs(~s); result = varOp(lval,op,rval); }
 	}
-	catch(const char*& ex) {
-		result = false;
-	}
-  else if(L.type=='~') try {
+  else if(L.type=='~') {
 		str lval = getStr(L.name,L.context);
-		str rval = srhs(~s);
-		result = varOp(lval,op,rval);
+		if(lval!=nos) { str rval = srhs(~s); result = varOp(lval,op,rval); }
 	}
-	catch(const char*& ex) {
-		result = false;
-	}
-  else if(L.type=='$') try {
+  else if(L.type=='$') {
 		if(op!='=') throw report("Mod::evalEquation()" E_BADSYNTAX D_VAR,-s);
 		VarContainer* l = getObj(L.name,L.context);
-		xstr id = s.movevar();
-		if(id=="node") result = l->type=='n';
-    else if(id=="item") result = l->type=='i';
-		else if(id=="mod") result = l->type=='m';
-		else result = l==findObj(id);
+    if(l!=none) {
+  		xstr id = s.movevar();
+  		if(id=="node") result = l->type=='n';
+      else if(id=="item") result = l->type=='i';
+  		else if(id=="mod") result = l->type=='m';
+  		else result = l==findObj(id);
+    }
   }
-	catch(const char*& ex) {
-		result = false;
-	}
 	else throw report("Mod::evalEquation()?" E_BADSYNTAX D_VAR,-s);
 	if(inv) result = !result;
-//	printf("(%d)\n",result); getchar();
 	return result;
 }
 
@@ -152,6 +150,7 @@ template<> Array<xstr>* Mod::getArray(str& arr) { return g->sarrays[arr]; }
 template<> Array<str>* Mod::getArray(str& arr) { return g->oarrays[arr]; }
 
 void Mod::run() {
+  noif = true;
   for(auto const& cmd: lines) {
 		xstr line = cmd;
     if(line.eat("check ")) {
@@ -164,10 +163,13 @@ void Mod::run() {
 }
 
 void Mod::executeLine(xstr& line) {
+  bool hasif = line.startsWith("if ");
 	if(!evalIf(line)) return;
+  if(hasif) noif = false;
 	xstr cmd = ~line;
   if(cmd.eat("message! ")) message(cmd,true);
   else if(cmd.eat("message ")) message(cmd);
+  else if(cmd.eat("text ")) text(cmd);
 	else if(cmd.eat("set @")) array<int>(cmd);
 	else if(cmd.eat("set ~")) array<xstr>(cmd);
 	else if(cmd.eat("set $")) array<str>(cmd);
@@ -200,6 +202,11 @@ void Mod::message(xstr& cmd, bool strict) {
   if(strict) colprintf("\n\n$GREEN %s $LIGHTGRAY", G_WAIT);
 	getkey();
   if(strict) clear();
+}
+
+void Mod::text(xstr& cmd) {
+  g->addtext+= " ";
+  g->addtext+= srhs(cmd);
 }
 
 void Mod::dump() {
@@ -309,9 +316,12 @@ void Mod::initDataArr(xstr& cmd) {
 void Mod::doFilter(xstr& cmd) {
 	while(xstr filter=cmd.moves("filter(%63[^)]) ")) {
 		for(auto const& kv: select) {
-			if(!evalEquation(kv.first,filter)) select.erase(kv.first);
+      ifcontext = kv.first;
+      xstr stepfilter = -filter;
+			if(!evalCondOr(stepfilter)) select.erase(kv.first);
 		}
 	}
+  ifcontext = NULL;
 }
 
 VarContainer* Mod::doPickOne(xstr& cmd, VarInfo& vi) {
@@ -333,7 +343,7 @@ VarContainer* Mod::doPickOne(xstr& cmd, VarInfo& vi) {
 		wprint(brackets);
 		puts("\n");
     bool must = fn=='!';
-		VarContainer* result = doPickAsk<VarContainer*>(select,none,must);
+		VarContainer* result = doPickAsk<VarContainer*,VCLess<VarContainer> >(select,none,must);
 		return result;
 	}
 	else { // pick a random item

@@ -10,6 +10,8 @@ Game::Game() : VarContainer(this,"game") {
   strs.insert(make_pair("statusbar",""));
 	path = new Path(this);
   intro = "";
+  addtext = "";
+  modcnt = 0;
 }
 
 Item* Game::getItem(str key) {
@@ -53,6 +55,17 @@ void Game::addMod(Mod* mod) {
 	VarInfo vi = getVar(id);
   auto result = objects.insert(make_pair(mod->id,mod));
   if(!result.second) throw report("Game::addMod()" E_REPEATED D_MOD,-mod->id);
+}
+
+Mod* Game::textMod(xstr& text) {
+  str key = "_mod";
+  key+= ++modcnt;
+  Mod* result = new Mod(this,key);
+  sprintf(str::buffer,"message \"%s\"",-text);
+	xstr line = str::buffer;
+	result->parseLine(line,2);
+	g->addMod(result);
+  return result;
 }
 
 Action* Game::getAction(str key) {

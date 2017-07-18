@@ -21,6 +21,8 @@ main { margin: 0 10em 10em 0; }
   xmp { background: ActiveCaption; color: CaptionText; }
     xmp:before { display: block; content: " "; margin: 0 0 -2vw 0; height: 0; }
   code { font-family: monospace; background: black; color: #C0C0C0; }
+    code.light { background: ActiveCaption; color: CaptionText; }
+    code.pre { white-space: pre-wrap; }
   code, xmp { padding: 0.5vw; font-size: 80%; display: block; line-height: 2vw; margin: 0 0 1vw 0; }
   .L { color: #FFFFFF; }
   .D { color: #808080; }
@@ -28,6 +30,7 @@ main { margin: 0 10em 10em 0; }
   .B { color: #008080; }
   .G { color: #008000; }
   .g { color: #00FF00; }
+  .red { color: #800000; }
   tt { color: GrayText; font-size: smaller; }
   i { color: GrayText; }
   small { display: block; line-height: 2vw; color: GrayText; margin-top: 1vw; }
@@ -56,7 +59,9 @@ main { margin: 0 10em 10em 0; }
 </ul>
 <a href="#prikazy">Příkazy</a>
 <ul>
+  <li><a href="vars">?vars</a>
   <li><a href="#message">message</a>
+  <li><a href="#message1">message!</a>
   <li><a href="#run">run</a>
   <li><a href="#if">if-then</a>
   <li><a href="#check">check</a>
@@ -74,6 +79,8 @@ main { margin: 0 10em 10em 0; }
 <ul>
   <li><a href="#podminky">podmínky</a>
   <li><a href="#zpracovani">zpracování kódu</a>
+  <li><a href="#psanipribehu">psaní příběhu</a>
+  <li><a href="#dlouhehry">dlouhé hry</a>
 </ul>
 </nav>
 
@@ -183,8 +190,8 @@ Odpověď je <span class="L">42</span>.
 <p>Proměnné se prefixují znakem podle typu:
 <ul>
   <li><kbd>@</kbd> číslo
-  <li><kbd>~</kbd> text
-  <li><kbd>$</kbd> ukazatel na objekt
+  <li><kbd>~</kbd> text; <tt>~statusbar</tt> obsahuje text, který se zobrazí pod popisem situace (vhodné pro zobrazení počtu životů a jiných statů).
+  <li><kbd>$</kbd> ukazatel na objekt; <tt>$here</tt> ukazuje na <a href="#uzel">uzel</a>, ve kterém se hráč právě nachází
 </ul>
 <p>Po znaku typu následuje bez mezery <b>identifikátor</b>: jméno, kterým je proměnná odkazována v kódu. Nesmí obsahovat diakritiku, nesmí začínat na číslo a může obsahovat písmena, čísla a podtržítko.
 <p>Objekt je cokoliv, co může obsahovat proměnné (uzel, předmět, mod, akce nebo pole). Proměnné patřící objektu jsou <i>lokální</i>, přistupujeme k nimi přes tečku, např. <tt>$objekt.@proměnná</tt>. Hodnotu proměnné přiřadíme operátorem <tt>:=</tt>.
@@ -266,6 +273,12 @@ mod smrt
 </xmp>
 
 <p>Mod <b>init</b> (pokud je napsán) se spustí automaticky na začátku hry.
+<p>Mod <b>update</b> (pokud je napsán) se spustí automaticky před každým vypsáním uzlu.
+<p>Ukazatel na mod je možné vytvořit pomocí textu:
+<xmp>
+$report:= "Hello"
+</xmp>
+<p>Zde se vytvoří anonymní mod (se jménem <tt>_modX</tt>, kde <tt>X</tt> je číslo rostoucí od 1), který obsahuje jediný příkaz <tt>message</tt>, který obsahuje zadaný text (zde message "Hello").
 
 <a name="pole"><h3>pole</h3></a>
 <p>Pole obsahuje pouze proměnné stejného typu. Neobsahuje popis (proměnnou <tt>.~text</tt>) a není možné ho přiřadit proměnné typu <tt>$</tt>. Je možné ho využít pouze v příkazech <tt>select</tt> a <tt>foreach</tt>. Položky pole jsou <b>klíč</b> (libovolného typu) a <b>hodnota</b> (pouze text).
@@ -290,11 +303,29 @@ array ~preklad
 <a name="prikazy"><h2>Příkazy</h2></a>
 <p>Jinde než do akce a do modu nelze příkazy vkládat.
 
+<a name="vars"><h3>?vars</h3></a>
+<p>Vypíše obsah všech proměnných ve hře. Vhodné k ladění.
+<xmp>
+message "Najednou se propadla podlaha!"
+</xmp>
+
 <a name="message"><h3>message</h3></a>
 <p>Vloží text a čeká na stisk klávesy.
 <xmp>
 message "Najednou se propadla podlaha!"
 </xmp>
+
+<a name="message1"><h3>message!</h3></a>
+<p>Totéž, co message, ale před výpisem vymaže obrazovku
+<xmp>
+message! "Najednou se propadla podlaha!"
+</xmp>
+
+<a name="text"><h3>text</h3></a>
+<xmp>
+  foreach $item from items filter($place=$here) text "{$item.~see}"
+</xmp>
+<p>Připojí text k popisu uzlu. Vhodné do modu update. V příkladě se k popisu uzlu přidají obsahu lokálních proměnných <tt>.~see</tt> všech předmětů, které se zde nachází.
 
 <a name="run"><h3>run</h3></a>
 <p>Spustí jiný mod:
@@ -347,6 +378,11 @@ if not luck @zaklad + @bonus : $hrac.@max and $hrac.$zbran=item then run zasah
 check PODMÍNKA
 </xmp>
 <p>Podmínka je popsána výše. Pokud není splněna mod nebo akce nevykoná příkazy, které následují po tomto příkazu.
+<p>Navíc je možné testovat nesplnění předchozích <tt>if</tt>:
+<xmp>
+check noif
+</xmp>
+<p>Příklad vykoná následující příkazy, pokud před ním nebyla splněna žádná podmínka <tt>if</tt>.
 
 <a name="select"><h3>select</h3></a>
 <p>Vybere ukazatel na objekt. Jde ho použít i na pole, kde vybere i proměnné jiných typů, popsáno níže.
@@ -592,4 +628,118 @@ item klic "Klíč"
 item pacidlo "Páčidlo"
   .$otevri:= pacidloOtevri
 </xmp>
+
+<a name="psanipribehu"><h3>Psaní příběhu</h3></a>
+<p>Počítačové hry jsou obvykle založené na audiovizuálních efektech: vnímání herní scény a reakce na ni. Zde máme k dispozici pouze text s občasným zvýrazněním, který oslovuje především čtenáře knih. Ty vtáhne do děje dobrý příběh a hlavním aktérem je jejich fantazie. Je to podobný rozdíl, jako mezi knihou a filmem: film běží v čase a divák se nechá unášet. Kniha má mnohem více prostoru na popisy detailů a skrytých věcí: když je někde nahuštěný děj, čtenář může zvolnit nebo zastavit a uvědomit si prožitek, než pokračuje dál.
+<p>Proto dobré gamebooky začínají na dobrých příbězích. K nim se pak vytváří alternativní dějové linie. Více viz <a href="http://www.textovky.cz/tvorba-her/par-zakladnich-kamenu-pri-tvorbe-gamebooku/">Pár základních kamenů při tvorbě gamebooků</a>.
+<p>Uveďme si příklad stavějící na Ezopově bajce <a href="http://www.jablko.cz/pohadky/pohadky/pohad_14.htm">O pyšné lampě</a>:
+<code class="pre light">Na stole stála svítící lampa, čistá a vyleštěná. Její světlo bylo zářivé a dopadalo na stůl i do celého pokoje.
+Lampa byla na sebe velmi pyšná. Ani stůl, ani knihy nesvítily, jen ona zářila. Řekla: "Podívejte se na mně, nikdo z vás neumí svítit. Svítím víc, než měsíc na obloze i s hvězdami. Dovedu svítit tak, jako slunce!"
+Co se tak chlubila, hrálo si u stolu malé kotě. Zatáhlo za cíp ubrusu a bác. Lampa spadla a zhasla. "Proč nám nesvítíš teď", ? řekla kniha. "Už ze mne nikdo nemůže číst, když nesvítíš! Ale podívej se,  měsíc svítí dál!
+Stačilo malé kotě, aby tě sfouklo, ale měsíc, hvězdy i slunce vyzařují světlo navěky."
+</code>
+<p>Tuto hru převedeme do lineárního příběhu:
+<code class="pre light"><b class="red">intro</b> >>>
+<span class="G">>Stojíš na prostřeném stole, kolem tebe rozložené knihy. Jsi svítící lampa, čistá a vyleštěná. Měla bys začít dělat kariéru.</span>
+
+<b class="red">action</b> do <span class="G">"Udělat"</span>
+  select $here from paths ask(<span class="G">"Co chceš udělat?"</span>)
+
+initial <b class="red">node</b> sviceni >>>
+<span class="G">>Tvé světlo je zářivé a dopadá na stůl i do celého pokoje. Krom sebe vidíš venku přes okno zářit měsíc a hvězdy (je hluboká jasná noc). Opodál si hraje kotě.</span>
+
+<b class="red">node</b> rozbiti >>>
+<span class="G">>Jsi na své světlo velmi pyšná. Ani stůl, ani knihy nesvítí, jen ty záříš.
+>[D"Podívejte se na mně, nikdo z vás neumí svítit. Svítím víc, než měsíc na obloze i s hvězdami. Dovedu svítit tak, jako slunce!"]
+>Rozzářila ses jasným světlem, což přilákalo kotě, které si hrálo opodál. Zatáhlo za cíp ubrusu a bác. Spadlas' a zhasla.
+>
+>[D"Proč nám nesvítíš teď?"], řekla kniha. [D"Už ze mne nikdo nemůže číst, když nesvítíš! Ale podívej se, měsíc svítí dál!"]</span>
+
+final <b class="red">node</b> ponauceni <span class="G">"Stačilo malé kotě, aby tě sfouklo, ale měsíc, hvězdy i slunce vyzařují světlo navěky. [LPýcha předchází pád.]"</span>
+
+<b class="red">map</b>
+  sviceni > rozbiti <span class="G">"Zazářit ještě víc"</span>
+  rozbiti > ponauceni <span class="G">"Vzít si ponaučení"</span>
+</code>
+
+<p>V programu Hedy pak hráče čekají následující obrazovky:</p>
+<small>1. "stránka"</small>
+<code class="pre">Stojíš na prostřeném stole, kolem tebe rozložené knihy. Jsi svítící lampa, čistá a vyleštěná. Měla bys začít dělat kariéru.
+
+<span class="G">Stiskni klávesu...</span>
+</code>
+
+<small>2. "stránka"</small>
+<code class="pre">Tvé světlo je zářivé a dopadá na stůl i do celého pokoje. Krom sebe vidíš venku přes okno zářit měsíc a hvězdy (je hluboká jasná noc). Opodál si hraje kotě.
+
+Co chceš udělat?
+
+<span class="g">A</span>: Zazářit ještě víc
+</code>
+
+<small>3. "stránka"</small>
+<code class="pre">Jsi na své světlo velmi pyšná. Ani stůl, ani knihy nesvítí, jen ty záříš.
+<span class="D">"Podívejte se na mně, nikdo z vás neumí svítit. Svítím víc, než měsíc na obloze i s hvězdami. Dovedu svítit tak, jako slunce!"</span>
+Rozzářila ses jasným světlem, což přilákalo kotě, které si hrálo opodál. Zatáhlo za cíp ubrusu a bác. Spadlas' a zhasla.
+
+<span class="D">"Proč nám nesvítíš teď?"</span>, řekla kniha. <span class="D">"Už ze mne nikdo nemůže číst, když nesvítíš! Ale podívej se, měsíc svítí dál!"</span>
+
+Co chceš udělat?
+
+<span class="g">A</span>: Vzít si ponaučení
+</code>
+
+<small>4. "stránka"</small>
+<code class="pre">Stačilo malé kotě, aby tě sfouklo, ale měsíc, hvězdy i slunce vyzařují světlo navěky. <span class="L">Pýcha předchází pád.</span>
+
+<span class="L">Game over!</span>
+</code>
+
+<p>Nyní do příběhu doplníme alternativní dějové linie. Hráč se může na dvou místech rozhodnout a moudrým rozhodnutím může i odvrátit nepříznivou situaci a dostate se do linie ústící v lepší konec ("vyhrát"):
+
+<code class="pre light"><b class="red">intro</b> >>>
+<span class="G">>Stojíš na prostřeném stole, kolem tebe rozložené knihy. Jsi svítící lampa, čistá a vyleštěná. Měla bys začít dělat kariéru.</span>
+
+<b class="red">action</b> do <span class="G">"Udělat"</span>
+  select $here from paths ask(<span class="G">"Co chceš udělat?"</span>)
+
+initial <b class="red">node</b> sviceni >>>
+<span class="G">>Tvé světlo je zářivé a dopadá na stůl i do celého pokoje. Krom sebe vidíš venku přes okno zářit měsíc a hvězdy (je hluboká jasná noc). Opodál si hraje kotě.</span>
+
+<b class="red">node</b> rozbiti >>>
+<span class="G">>Jsi na své světlo velmi pyšná. Ani stůl, ani knihy nesvítí, jen ty záříš.
+>[D"Podívejte se na mně, nikdo z vás neumí svítit. Svítím víc, než měsíc na obloze i s hvězdami. Dovedu svítit tak, jako slunce!"]
+>Rozzářila ses jasným světlem, což přilákalo kotě, které si hrálo opodál. Zatáhlo za cíp ubrusu a bác. Spadlas' a zhasla.
+>
+>[D"Proč nám nesvítíš teď?"], řekla kniha. [D"Už ze mne nikdo nemůže číst, když nesvítíš! Ale podívej se, měsíc svítí dál!"]</span>
+
+<u><b class="red">node</b> zhasnuti <span class="G">"Koukala jsi na knihy, jak se jejich písmo krásně odráží ve tvém světle. Ale co ty knihy dávaly tobě? Nic. Proč bys jim měla svítit? Rozhodla ses zhasnout. Přišel člověk a šroubovákem se tě snaží přimět ke svícení."</span></u>
+
+<u>final <b class="red">node</b> vyhozeni <span class="G">"Rozhodla ses, že zadarmo svítit nebudeš. Po chvíli snažení to člověk vzdal, hodil tě do elektroodpadu a na tvé místo dal novou lampu. [LKdo čím zachází, tím také schází.]"</span></u>
+
+final <b class="red">node</b> ponauceni <span class="G">"Stačilo malé kotě, aby tě sfouklo, ale měsíc, hvězdy i slunce vyzařují světlo navěky. [LPýcha předchází pád.]"</span>
+
+<u>final <b class="red">node</b> pomoc >>>
+<span class="G">>Jak jsi tak bezmocně ležela, všimla sis v koutě staré zaprášené žárovky.
+>[D"Žárovko, byla jsem krásná a zářící lampa, a teď tu ležím bez užitku stejně jako ty a brzy mě také přikryje prach a nikdo si na mě už nevzpomene, jak jsem krásně zářila. Co mám dělat?"]
+>Žárovka zamrkala a setřásla ze sebe prach. [D"Nejsem bez užitku, měsíce čekám na tuto chvíli, a teď tě opět vynesu na výsluní!"]
+>Žárovka se vymrštila, zašroubovala se na místo původní rozbité žárovky - a společně jste šťastně svítily dál. Střídmě, abyste opět nepřilákaly kotě, ale o to déle a příjemněji. [LLíná huba, hotové neštěstí.]</span></u>
+
+<b class="red">map</b>
+  sviceni > rozbiti <span class="G">"Zazářit ještě víc"</span>
+  <u>sviceni > zhasnuti <span class="G">"Zhasnout"</span></u>
+  <u>zhasnuti > vyhozeni <span class="G">"Nerozsvítit se"</span></u>
+  <u>zhasnuti > sviceni <span class="G">"Rozsvítit se"</span></u>
+  rozbiti > ponauceni <span class="G">"Vzít si ponaučení"</span>
+  <u>rozbiti > pomoc <span class="G">"Požádat žárovku o pomoc"</span></u>
+</code>
+
+<p>A z bajky se stává hra. Z několika příběhů jeden, kompaktní.
+
+<a name="dlouhehry"><h3>Dlouhé hry</h3></a>
+<p>Ezopova bajka v příkladu výše je přehledná od začátku do konce. Při tvorbě hry rozsahem srovnatelné s knihou je nutné mít přehlednější strukturu. Zde je dobré kreslit si myšlenkovou mapu rozdělenou do <b>scén</b>.
+<p>Každá scéna je samostatný soubor s příponou <tt>.txgi</tt>, který nelze hrát samostatně. U scény by mělo být zapsáno, jaký stav hry (proměnných vyžaduje), jaké jsou její <i>externí uzly</i> (ústící do jiných souborů) a <i>vstupní uzly</i> (přicházející z jiných souborů.
+<p>V hlavním souboru hry je pak vhodné ponechat pouze herní mechaniku (akce) a objekty (předměty, možná mody), které jsou používané napříč scénami.
+<p>V jednotlivých scénách je dobré všechny identifikátory prefixovat něčím unikátním, aby nedošlo ke konfliktu.
+<p>S tímto rozvržením je pak možné izolovaně se věnovat konkrétní scéně (pracujeme s hlavním souborem a souborem scény). Je tak možné i psát ve více lidech nebo nezávisle rozšiřovat cizí rozsáhlou hru.
 </main>

@@ -1,3 +1,13 @@
-Alpha
+﻿Alpha
 =====
-0.1 - p�id�no message!, statusbar
+0.1
+příkaz message! - vyčistí obrazovku před zobrazením nové zprávy
+příkaz ?vars - zobrazí všechny proměnné hry (vhodné pro ladění)
+proměnná ~statusbar - vždy zobrazí text pod popisem uzlu (vhodné pro staty: počet životů, síla...)
+
+0.2
+nabídka akcí je vždy ve stejném pořadí
+mod update - je vykonán před každým přesunem
+textový mod - objektu je možné přiřadit text, např. $foo:= "hello"; text se interpretuje jako mod obsahující jediný příkaz message
+příkaz text - přidá text do popisu uzlu (vhodné do mod update)
+check noif - pustí dál, pokud předtím žádná podmínka if nebyla splněna

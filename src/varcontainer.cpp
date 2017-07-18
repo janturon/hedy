@@ -3,6 +3,7 @@ using namespace std;
 
 VarContainer* none; // is created in game constructor
 int nan = -1000000000;
+str nos = "§¤°";
 
 VarContainer::VarContainer(Game* game, const str _id) : id(_id) {
   g = game;
@@ -21,25 +22,25 @@ VarContainer* VarContainer::getVC(const char* id) {
 		str sid = -kv.first->id;
 		if(sid==id) return kv.first;
 	}
-  throw report("VarContainer::getVC()" E_NOTFOUND D_VAR,id);
+  return none;
 }
 VarContainer* VarContainer::getObj(const char* id, VarContainer* context) {
 	if(context==NULL) context = this;
 	auto objit = context->objs.find(id);
   if(objit!=context->objs.end()) return objit->second;
-  throw report("VarContainer::getObj()" E_NOTFOUND D_VAR,id);
+  return none;
 }
 str VarContainer::getStr(const char* id, VarContainer* context) {
 	if(context==NULL) context = this;
 	auto strit = context->strs.find(id);
   if(strit!=context->strs.end()) return strit->second;
-  throw report("VarContainer::getStr()" E_NOTFOUND D_VAR,id);
+  return nos;
 }
 int VarContainer::getInt(const char* id, VarContainer* context) {
 	if(context==NULL) context = this;
 	auto intit = context->ints.find(id);
   if(intit!=context->ints.end()) return intit->second;
-  throw report("VarContainer::getInt()" E_NOTFOUND D_VAR,id);
+  return nan;
 }
 // mynode, myitem, mymod
 // mynode.@myint, mynode.~mystr, mynode.$myobj
@@ -123,7 +124,10 @@ void VarContainer::parseVar(str& line, char pass) {
     VarInfo L = getVar(lhs);
     if(L.type=='@') L.context->ints[L.name] = irhs(rhs);
     else if(L.type=='~') L.context->strs[L.name] = findStr(rhs);
-    else if(L.type=='$') L.context->objs[L.name] = findObj(rhs);
+    else if(L.type=='$') {
+      if(xstr rhstext=rhs.movetext()) L.context->objs[L.name] = g->textMod(rhstext);
+      else L.context->objs[L.name] = findObj(rhs);
+    }
   }
 }
 

@@ -3,9 +3,16 @@
 
 #include "all.h"
 
+template<class T>
+struct VCLess {
+  bool operator()(T* a, T* b) { return a->id < b->id; }
+};
+
 template <class T> class Array;
 
 class Mod : public VarContainer, public Parsable {
+  bool noif;
+  VarContainer* ifcontext; // for filters
 protected:
   std::vector<xstr> lines;
 
@@ -20,16 +27,17 @@ protected:
 	bool evalCondAnd(str& cond);
 	bool evalCondPart(xstr& s);
   bool evalLuck(xstr& s);
-	bool evalEquation(VarContainer* context, xstr s);
+	bool evalEquation(xstr s);
 	bool varOp(int lval, char op, int rval);
 	bool varOp(str& lval, char op, str& rval);
 
 	void executeLine(xstr& line);
   void message(xstr& cmd, bool strict=false);
+  void text(xstr& cmd);
 	void showdump(xstr& line);
 
 	// select, foreach
-  std::map<VarContainer*,str> select;
+  std::map<VarContainer*,str, VCLess<VarContainer> > select;
 	void initData(xstr& cmd);
 	void doFilter(xstr& cmd);
 	void doLoop(xstr& cmd, char type);
@@ -46,7 +54,8 @@ public:
   Mod(Game* g, const str _id);
   static Mod* parseSingleLine(Game* g, xstr& line, char pass);
   void parseLine(xstr& line, char pass);
-	template<class T> T doPickAsk(std::map<T,str>& src, T def, bool must=false);
+	template<class T, class U=std::less<T> >
+    T doPickAsk(std::map<T,str,U>& src, T def, bool must=false);
   void run();
 	void dump();
 };
@@ -82,8 +91,8 @@ void Mod::doFilterArr(xstr& cmd, Array<T>& array) {
 	}
 }
 
-template<class T>
-T Mod::doPickAsk(std::map<T,str>& src, T def, bool must) {
+template<class T, class U>
+T Mod::doPickAsk(std::map<T,str,U>& src, T def, bool must) {
 	std::map<char,T> keys;
 	char letters[] = " ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	letters[0] = must ? 1 : -5; // -5=ESC, 0=end of string
@@ -107,7 +116,6 @@ T Mod::doPickAsk(std::map<T,str>& src, T def, bool must) {
 	CHOSEN:
 	return keys[letter];
 }
-
 
 class Action : public Mod {
 public:

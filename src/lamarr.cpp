@@ -29,18 +29,13 @@ int main(int argc, char** argv) {
 	}
 
 	// run init
-	try {
-		Mod* init = game.getMod("init");
-		init->run();
-	}
-	catch(const char*& ex) {
-		// no init, never mind
-	}
+	try { game.getMod("init")->run(); } catch(...) {}
 
 	try {
     Node* nodeHere;
 		bool isFinal = false;
 		do {
+    	try { game.getMod("update")->run(); } catch(...) {}
 			VarContainer* here = game.findObj("$here",none);
 			if(here->type!='n') throw report(R_HERE);
 			nodeHere = static_cast<Node*>(here);
@@ -63,11 +58,13 @@ void move(Game& game, Node* here) {
 	xstr templ = -here->findStr(".~text");
 	templ.replaceMe("''","\"");
 	wprint(here->srhs(templ));
+  wprint(game.addtext);
+  game.addtext = "";
   xstr statusbar = -game.findStr("~statusbar");
   if(statusbar) { puts("\n"); wprint(here->srhs(statusbar)); }
 	puts("\n");
 	Action* chosen;
-	if(game.actions.size()>1) chosen = Action().doPickAsk<Action*>(game.actions,NULL);
+	if(game.actions.size()>1) chosen = Action().doPickAsk<Action*,VCLess<Action> >(game.actions,NULL);
 	else chosen = game.actions.begin()->first;
 	if(chosen!=NULL) chosen->run();
 	else game.objs["here"] = here;
