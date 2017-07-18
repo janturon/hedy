@@ -2,7 +2,7 @@
 Hedy je jazyk pro tvorbu textových her. Pojmenován je na počest herečky a vynálezkyni [Hedy Lamarrové](https://en.wikipedia.org/wiki/Hedy_Lamarr). Umožňuje snadnou tvorbu nelineárních příběhů ve formě herní knihy ([gamebooku](https://cs.wikipedia.org/wiki/Gamebook)), do níž je možné doprogramovávat akce až do podoby plnohodnotné textové hry.
 
 ## Dokumentace a první kroky
-- dokumentace je v adresáři /doc
+- dokumentace je v adresáři /doc a také [online](http://hedy.janturon.cz)
 - tutoriál naleznete v adresáři /games
 
 ## Komunikace
