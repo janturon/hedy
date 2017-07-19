@@ -3,7 +3,7 @@ using namespace std;
 
 VarContainer* none; // is created in game constructor
 int nan = -1000000000;
-str nos = "§¤°";
+str nos = "Â§Â¤Â°";
 
 VarContainer::VarContainer(Game* game, const str _id) : id(_id) {
   g = game;
@@ -133,22 +133,23 @@ void VarContainer::parseVar(str& line, char pass) {
 
 int VarContainer::irhs(xstr rhs) {
   int result = 0;
-  char op = ' ';
   rhs.trimMe();
+  char op = ' ';
   do {
+    if(rhs.eat("+")) { op = '+'; continue; }
+    if(rhs.eat("-")) { op = '-'; continue; }
     int part = rhs.movei("%d",nan);
-    if(part!=nan); // do nothing
-    else if(rhs.eat("+")) op = '+';
-    else if(rhs.eat("-")) op = '-';
-    else {
+    if(part==nan) {
 			VarInfo vi = getVar(rhs);
 			part = getInt(vi.name,vi.context);
+      if(part==nan) break;
 		}
-    if(part!=nan) switch(op) {
+    switch(op) {
       case ' ': result = part; break;
       case '+': result+= part; break;
       case '-': result-= part; break;
     }
+    op = ' ';
   } while(rhs.position<rhs.length);
   return result;
 }
@@ -172,9 +173,15 @@ void VarContainer::replaceVars(xstr& result) {
 		if(result[0]!='}') continue;
     VarInfo vi = getVar(var);
     str val;
-    if(vi.type=='@') val = g->getInt(vi.name,vi.context);
+    if(vi.type=='@') {
+      int r = g->getInt(vi.name,vi.context);
+      if(r==nan) val = "" ; else val = r;
+    }
+    else if(vi.type=='~') {
+      val = g->getStr(vi.name,vi.context);
+      if(val==nos) val = "";
+    }
 		else if(vi.type=='$') val = g->getObj(vi.name,vi.context)->id;
-    else if(vi.type=='~') val = g->getStr(vi.name,vi.context);
 		var-= "{";
 		var+= "}";
     result.replaceMe(-var,-val);

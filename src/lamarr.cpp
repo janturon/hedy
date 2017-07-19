@@ -35,7 +35,6 @@ int main(int argc, char** argv) {
     Node* nodeHere;
 		bool isFinal = false;
 		do {
-      game.addtext = "";
     	try { game.getMod("update")->run(); } catch(...) {}
 			VarContainer* here = game.findObj("$here",none);
 			if(here->type!='n') throw report(R_HERE);
@@ -59,7 +58,8 @@ void move(Game& game, Node* here) {
 	xstr templ = -here->findStr(".~text");
 	templ.replaceMe("''","\"");
 	wprint(here->srhs(templ));
-  wprint(game.addtext);
+  puts(game.addtext);
+//  printf("%d %d %d",game.addtext[0], game.addtext[1], game.addtext[2]);
   game.addtext = "";
   xstr statusbar = -game.findStr("~statusbar");
   if(statusbar) { puts("\n"); wprint(here->srhs(statusbar)); }

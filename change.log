@@ -1,4 +1,4 @@
-﻿Alpha
+Alpha
 =====
 0.1
 příkaz message! - vyčistí obrazovku před zobrazením nové zprávy
@@ -15,3 +15,5 @@ check noif - pustí dál, pokud předtím žádná podmínka if nebyla splněna
 0.3
 do objektových proměnných je možné ukládat i akce
 odstraněna chyba filtrů s or a and
+odstraněna chyba občasných divných znaků u příkazu text
+odstraněna chyba špatného přičítání

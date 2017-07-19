@@ -105,7 +105,6 @@ bool Mod::evalEquation(xstr s) {
   		else if(id=="mod") result = l->type=='m';
   		else if(id=="action") result = l->type=='a';
   		else result = l==findObj(id);
-//      printf("%s->%s=%s(%d)",-L.context->id,-L.name,-id,result); getchar();
     }
   }
 	else throw report("Mod::evalEquation()?" E_BADSYNTAX D_VAR,-s);
@@ -203,8 +202,8 @@ void Mod::message(xstr& cmd, bool strict) {
 }
 
 void Mod::text(xstr& cmd) {
-  g->addtext+= " ";
-  g->addtext+= srhs(cmd);
+  sprintf(str::buffer,"%s %s",-g->addtext,-srhs(cmd));
+  g->addtext = str::buffer;
 }
 
 void Mod::dump() {
@@ -315,7 +314,6 @@ void Mod::doFilter(xstr& cmd) {
   int i=0;
 	while(xstr filter=cmd.moves("filter(%63[^)]) ")) {
     for(auto it=select.cbegin(); it!=select.cend(); ) {
-		//for(auto const& kv: select) {
       ifcontext = it->first;
       xstr stepfilter = -filter;
 			if(!evalCondOr(stepfilter)) it = select.erase(it);
