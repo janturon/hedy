@@ -39,10 +39,6 @@ bool Mod::evalIf(str& s) {
 
 bool Mod::evalCondOr(str& cond) {
   cond.explodeMe(" or ");
-  if(cond.tokens.size()>1) {
-		xstr part = cond(1);
-//    printf("%s:%s:%d",-ifcontext->id,-part,evalCondAnd(part)); getchar();
-  }
   for(long i=0; i<cond.tokens.size(); ++i) {
 		xstr part = cond(i);
 		if(evalCondAnd(part)) return true;
@@ -61,9 +57,11 @@ bool Mod::evalCondAnd(str& cond) {
 
 bool Mod::evalCondPart(xstr& s) {
   bool result = false;
+	bool inv = s.eat("not ");
   if(s.eat("luck ")) result = evalLuck(s);
   else if(s.eat("noif")) result = noif;
   else result = evalEquation(s);
+  if(inv) result = !result;
   return result;
 }
 
@@ -83,10 +81,9 @@ bool Mod::evalLuck(xstr& s) {
 
 bool Mod::evalEquation(xstr s) {
 	s.trimMe();
-	bool inv = s.eat("not ");
 	xstr Lvar = s.movevar();
 	VarInfo L;
-	try { L = getVar(Lvar); } catch(const char*& ex) { return inv; }
+	try { L = getVar(Lvar); } catch(const char*& ex) { return false; }
 	if(ifcontext!=NULL) L.context = ifcontext;
 	s.eat(" ");	char op = s.movechar();
 	bool result = false;
@@ -106,11 +103,12 @@ bool Mod::evalEquation(xstr s) {
   		if(id=="node") result = l->type=='n';
       else if(id=="item") result = l->type=='i';
   		else if(id=="mod") result = l->type=='m';
+  		else if(id=="action") result = l->type=='a';
   		else result = l==findObj(id);
+//      printf("%s->%s=%s(%d)",-L.context->id,-L.name,-id,result); getchar();
     }
   }
 	else throw report("Mod::evalEquation()?" E_BADSYNTAX D_VAR,-s);
-	if(inv) result = !result;
 	return result;
 }
 
@@ -314,11 +312,14 @@ void Mod::initDataArr(xstr& cmd) {
 }
 
 void Mod::doFilter(xstr& cmd) {
+  int i=0;
 	while(xstr filter=cmd.moves("filter(%63[^)]) ")) {
-		for(auto const& kv: select) {
-      ifcontext = kv.first;
+    for(auto it=select.cbegin(); it!=select.cend(); ) {
+		//for(auto const& kv: select) {
+      ifcontext = it->first;
       xstr stepfilter = -filter;
-			if(!evalCondOr(stepfilter)) select.erase(kv.first);
+			if(!evalCondOr(stepfilter)) it = select.erase(it);
+      else it++;
 		}
 	}
   ifcontext = NULL;

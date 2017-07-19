@@ -35,6 +35,7 @@ int main(int argc, char** argv) {
     Node* nodeHere;
 		bool isFinal = false;
 		do {
+      game.addtext = "";
     	try { game.getMod("update")->run(); } catch(...) {}
 			VarContainer* here = game.findObj("$here",none);
 			if(here->type!='n') throw report(R_HERE);

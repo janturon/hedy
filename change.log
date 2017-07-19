@@ -11,3 +11,7 @@ mod update - je vykonán před každým přesunem
 textový mod - objektu je možné přiřadit text, např. $foo:= "hello"; text se interpretuje jako mod obsahující jediný příkaz message
 příkaz text - přidá text do popisu uzlu (vhodné do mod update)
 check noif - pustí dál, pokud předtím žádná podmínka if nebyla splněna
+
+0.3
+do objektových proměnných je možné ukládat i akce
+odstraněna chyba filtrů s or a and

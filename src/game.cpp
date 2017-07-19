@@ -74,9 +74,10 @@ Action* Game::getAction(str key) {
 }
 
 void Game::addAction(Action* action) {
-	str label = action->getStr("text");
-  auto result = actions.insert(make_pair(action,label));
+  auto result = objects.insert(make_pair(action->id,action));
   if(!result.second) throw report("Game::addAction()" E_REPEATED D_ACTION,-action->id);
+	str label = action->getStr("text");
+  actions.insert(make_pair(action,label));
 }
 
 
