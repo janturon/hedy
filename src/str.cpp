@@ -330,27 +330,27 @@ const char* str::substr(int from, size_t length) {
   }
   else return "";
 }
-int str::indexOf(char c, int from) {
+int str::indexOf(char c, int from) const {
   if(from<0) from = length+from;
   if(from<0 || from>length) return -1;
   for(int i=from; i<length; ++i) if(cstr[i]==c) return i;
   return -1;
 }
-int str::indexOf(const char* str, int from) {
+int str::indexOf(const char* str, int from) const {
   if(from<0) from = length+from;
   if(from<0 || from>length) return -1;
   const char* pos = strstr(cstr+from,str);
   if(pos==NULL) return -1;
   return pos-cstr;
 }
-int str::lastIndexOf(char c, int from) {
+int str::lastIndexOf(char c, int from) const {
   if(from==0) from = length;
   if(from<0) from = length+from;
   if(from<0 || from>length) return -1;
   for(int i=from; i-->0;) if(cstr[i]==c) return i;
   return -1;
 }
-int str::lastIndexOf(const char* str, int from) {
+int str::lastIndexOf(const char* str, int from) const {
   if(from==0) from = length;
   if(from<0) from = length+from;
   if(from<0 || from>length) return -1;

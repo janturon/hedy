@@ -7,7 +7,6 @@ using namespace std;
 */
 Node::Node(Game* g, const str _id)
   : VarContainer(g,_id) {
-  ints["visits"] = 0;
   type = 'n';
 }
 
@@ -17,15 +16,13 @@ str Node::getLabel() {
 }
 
 void Node::dump() {
-	printf("%s=%.64s\n",-id,-strs["text"]);
+  colprintf("$BROWN %s $LIGHTGRAY",-id);
   if(paths.size()) {
-    printf("--paths: ");
-    for(auto const& item: paths) {
-      if(item.second=="") printf("%s, ",-item.first->id);
-      else printf("%s->%s, ",-item.second,-item.first->id);
-    }
-    puts("");
+    printf("(paths: ");
+    for(auto const& item: paths) printf("%s, ",-item.first->id);
+    printf(")");
   }
+  puts("");
   VarContainer::dump();
 }
 
@@ -123,7 +120,7 @@ void Item::parseLine(xstr& line, char pass) {
 }
 
 void Item::dump() {
-  printf("%s\n",-id);
+  colprintf("$BROWN %s $LIGHTGRAY \n",-id);
   VarContainer::dump();
 }
 

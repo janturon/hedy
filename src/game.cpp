@@ -43,27 +43,52 @@ void Game::addNode(Node* node) {
   if(!result.second) throw report("Game::addNode()" E_REPEATED D_NODE,-node->id);
 }
 
-Mod* Game::getMod(str key) {
-  VarContainer* result = findObj(key,none);
+Mod* Game::getMod(str key, VarContainer* context) {
+  if(context==NULL) context = this;
+  VarContainer* result = context->findObj(key,none);
   if(result==none) throw report("Game::getMod()" E_NOTFOUND D_MOD, -key);
   if(result->type!='m') throw report("Game::getMod()" E_MISMATCH D_MOD, -key);
   return static_cast<Mod*>(result);
 }
 
 void Game::addMod(Mod* mod) {
-	xstr id = -mod->id;
-	VarInfo vi = getVar(id);
   auto result = objects.insert(make_pair(mod->id,mod));
   if(!result.second) throw report("Game::addMod()" E_REPEATED D_MOD,-mod->id);
 }
 
 Mod* Game::textMod(xstr& text) {
-  str key = "_mod";
+  str key = "_tmod";
   key+= ++modcnt;
   Mod* result = new Mod(this,key);
   sprintf(str::buffer,"message \"%s\"",-text);
 	xstr line = str::buffer;
 	result->parseLine(line,2);
+	g->addMod(result);
+  return result;
+}
+
+Mod* Game::fromMod(xstr& rhs) {
+  str key = "_fmod";
+  key+= ++modcnt;
+  Mod* result = new Mod(this,key);
+  xstr mod = rhs.movevar();
+  sprintf(str::buffer,"if %s=mod then run %s",-mod,-mod);
+	xstr line = str::buffer;
+	result->parseLine(line,2);
+  if(rhs.eat("default ")) {
+    line = "check noif";
+  	result->parseLine(line,2);
+    if(xstr text=rhs.movetext()) {
+      sprintf(str::buffer,"message \"%s\"",-text);
+    	line = str::buffer;
+    	result->parseLine(line,2);
+    }
+    else if(xstr var=rhs.movevar()) {
+      sprintf(str::buffer,"run %s",-var);
+    	line = str::buffer;
+    	result->parseLine(line,2);
+    }
+  }
 	g->addMod(result);
   return result;
 }
@@ -134,8 +159,8 @@ Array<str>* Game::getArray(str& key) {
 	return val;
 }
 
-void Game::dump(char what) { // vnmia
-	if(intro) if(what=='v' || what==' ') {
+void Game::dump() {
+	if(intro) {
 		colprintf("$WHITE GAME$LIGHTGRAY \n");
     printf("--intro: %.64s\n",-intro);
     VarContainer::dump();
@@ -146,42 +171,35 @@ void Game::dump(char what) { // vnmia
 			printf("--%s: %s\n", -kv.first, -kv.second);
 		}
 	}
-	if(what=='n' || what==' ') {
-		bool bnodes = false;
-  	for(pair<str,VarContainer*> const& kv: objects) {
-      if(kv.second->type!='n') continue;
-			if(!bnodes) colprintf("$WHITE NODES$LIGHTGRAY \n"), bnodes = true;
-      Node* n = static_cast<Node*>(kv.second);
-  		n->dump();
-  	}
+  VarContainer::dump();
+	bool bnodes = false;
+	for(pair<str,VarContainer*> const& kv: objects) {
+    if(kv.second->type!='n') continue;
+		if(!bnodes) colprintf("$WHITE NODES$LIGHTGRAY \n"), bnodes = true;
+    Node* n = static_cast<Node*>(kv.second);
+		n->dump();
 	}
-	if(what=='i' || what==' ') {
-	  bool bitems = false;
-  	for(pair<str,VarContainer*> const& kv: objects) {
-      if(kv.second->type!='i') continue;
-			if(!bitems) colprintf("$WHITE ITEMS$LIGHTGRAY \n"), bitems = true;
-      Item* i = static_cast<Item*>(kv.second);
-  		i->dump();
-  	}
+  bool bitems = false;
+	for(pair<str,VarContainer*> const& kv: objects) {
+    if(kv.second->type!='i') continue;
+		if(!bitems) colprintf("$WHITE ITEMS$LIGHTGRAY \n"), bitems = true;
+    Item* i = static_cast<Item*>(kv.second);
+		i->dump();
 	}
-	if(actions.size()>0) if(what=='m' || what==' ') {
-		colprintf("$WHITE ACTIONS$LIGHTGRAY \n");
-  	for(pair<Action*,str> const& kv: actions) {
-			kv.first->dump();
-		}
-		puts("");
+	colprintf("$WHITE ACTIONS$LIGHTGRAY \n");
+	for(pair<Action*,str> const& kv: actions) {
+		kv.first->dump();
 	}
-  if(what=='m' || what==' ') {
-		bool bmods = false;
-  	for(pair<str,VarContainer*> const& kv: objects) {
-      if(kv.second->type!='m') continue;
-			if(!bmods) colprintf("$WHITE MODS$LIGHTGRAY \n"), bmods = true;
-			Mod* m = static_cast<Mod*>(kv.second);
-			m->dump();
-		}
-		if(bmods) puts("");
+	puts("");
+	bool bmods = false;
+	for(pair<str,VarContainer*> const& kv: objects) {
+    if(kv.second->type!='m') continue;
+		if(!bmods) colprintf("$WHITE MODS$LIGHTGRAY \n"), bmods = true;
+		Mod* m = static_cast<Mod*>(kv.second);
+		m->dump();
 	}
-	if(iarrays.size()>0 || sarrays.size()>0 || oarrays.size()>0) if(what=='a' || what==' ') {
+	if(bmods) puts("");
+	if(iarrays.size()>0 || sarrays.size()>0 || oarrays.size()>0) {
 		colprintf("$WHITE ARRAYS$LIGHTGRAY \n");
 		for(pair<str,Array<int>*> const& kv: iarrays) {
 			printf("--%s: ", -kv.first);
@@ -201,6 +219,18 @@ void Game::dump(char what) { // vnmia
 			for(pair<str,str> const& ch: oarray->lines) printf("(%s=%s) ", -ch.first, -ch.second);
 			puts("");
 		}
+	}
+	getkey();
+}
+
+void Game::dumpMore() {
+	for(pair<Action*,str> const& kv: actions) {
+		kv.first->dumpMore();
+	}
+	for(pair<str,VarContainer*> const& kv: objects) {
+    if(kv.second->type!='m') continue;
+		Mod* m = static_cast<Mod*>(kv.second);
+		m->dumpMore();
 	}
 	getkey();
 }

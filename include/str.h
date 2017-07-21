@@ -84,10 +84,10 @@ public:
   const char* slice(int from, int to=0);
   str& substrMe(int from, size_t length=0);
   const char* substr(int from, size_t length=0);
-  int indexOf(char c, int from=0);
-  int indexOf(const char* str, int from=0);
-  int lastIndexOf(char c, int from=0);
-  int lastIndexOf(const char* str, int from=0);
+  int indexOf(char c, int from=0) const;
+  int indexOf(const char* str, int from=0) const;
+  int lastIndexOf(char c, int from=0) const;
+  int lastIndexOf(const char* str, int from=0) const;
   int count(char search);
 	int count(const char* search);
   bool startsWith(const char* test, int pos=0);

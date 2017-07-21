@@ -1,9 +1,29 @@
-Alpha
-=====
-0.1
-příkaz message! - vyčistí obrazovku před zobrazením nové zprávy
-příkaz ?vars - zobrazí všechny proměnné hry (vhodné pro ladění)
-proměnná ~statusbar - vždy zobrazí text pod popisem uzlu (vhodné pro staty: počet životů, síla...)
+0.3
+do objektových proměnných je možné ukládat i akce
+v příkazu text se interpretují barvy a proměnné
+odstraněna chyba filtrů s or a and
+odstraněna chyba občasných divných znaků u příkazu text
+odstraněna chyba špatného přičítání
+odstraněna chyba porovnávání s null
+odstraněna chyba dlouhých vět v otázkách
+odstraněna chyba barevného tisku dolaru
+kontext lokálních proměnných lokálního mohu je vlastník modu, ne mod
+
+item beton "beton"
+  .@var:= 42
+
+mod beton.$check
+  .@var:=24
+  # změní se beton.@var, ne beton.$check.@var
+
+nepřímé odkazy na mody
+
+item beton "beton"
+  .$use:= from $here.$use_beton default "Použil jsi beton, a nic."
+
+node stavba
+  .$use_beton "Použil jsi beton na stavbě"
+  # tento mod se použije, když na stavbě hráč použije beton
 
 0.2
 nabídka akcí je vždy ve stejném pořadí
@@ -12,8 +32,7 @@ textový mod - objektu je možné přiřadit text, např. $foo:= "hello"; text s
 příkaz text - přidá text do popisu uzlu (vhodné do mod update)
 check noif - pustí dál, pokud předtím žádná podmínka if nebyla splněna
 
-0.3
-do objektových proměnných je možné ukládat i akce
-odstraněna chyba filtrů s or a and
-odstraněna chyba občasných divných znaků u příkazu text
-odstraněna chyba špatného přičítání
+0.1
+příkaz message! - vyčistí obrazovku před zobrazením nové zprávy
+příkaz ?vars - zobrazí všechny proměnné hry (vhodné pro ladění)
+proměnná ~statusbar - vždy zobrazí text pod popisem uzlu (vhodné pro staty: počet životů, síla...)

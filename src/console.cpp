@@ -56,12 +56,13 @@ int colprintf(const char* format, ...) {
   va_end(args);
   for(const char* p=buffer; *p!=0; p=u8shiftcc(p,1)) {
     if(*p!='$') { printf("%s",u8charcc(p)); continue; }
-    ++p;
-    for(int i=0; *(colors[i])!=0; ++i) if(strstr(p,colors[i])==p) {
+    ++p; int i;
+    for(i=0; i<16; ++i) if(strstr(p,colors[i])==p) {
 			textcolor(i);
 			p+= strlen(colors[i]);
 			break;
 		}
+    if(i==16) putchar(*(--p));
   }
   return result;
 }

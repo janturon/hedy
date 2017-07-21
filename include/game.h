@@ -19,7 +19,7 @@ struct Game : VarContainer {
   Item* getItem(str key);
   Node* getNode(str key);
   Node* getExternNode(str key, str& file);
-  Mod* getMod(str key);
+  Mod* getMod(str key, VarContainer* context=NULL);
   Action* getAction(str key);
   str& getMacro(str key);
 	template <class T> Array<T>* getArray(str& key);
@@ -28,10 +28,12 @@ struct Game : VarContainer {
   void addMod(Mod* mod);
   void addAction(Action* action);
   Mod* textMod(xstr& text);
+  Mod* fromMod(xstr& text);
   static void parseSingleLine(Game* g, xstr& line, char pass);
   void parseIntro(xstr& line, char pass);
   void parseMacro(xstr& line, char pass);
-  void dump(char what=' ');
+  void dump();
+  void dumpMore();
 };
 
 #endif

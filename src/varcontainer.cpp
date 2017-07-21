@@ -51,7 +51,15 @@ VarInfo VarContainer::getVar(xstr& line) {
 	VarInfo vi;
 	xstr var = line.movevar();
 	vi.context = g;
-	if(var[0]=='.') vi.context = this, var.movechar(); // local
+	if(var[0]=='.') {
+    if(id.indexOf(".")>0) {
+      xstr xid = -id;
+      VarInfo vi2 = getVar(xid);
+      vi.context = vi2.context;
+    }
+    else vi.context = this;
+    var.movechar(); // local
+  }
 	vi.type = var[0];
 	if(vi.type!='$' && vi.type!='~' && vi.type!='@') vi.type = '^';
 	else var.movechar();
@@ -126,6 +134,7 @@ void VarContainer::parseVar(str& line, char pass) {
     else if(L.type=='~') L.context->strs[L.name] = findStr(rhs);
     else if(L.type=='$') {
       if(xstr rhstext=rhs.movetext()) L.context->objs[L.name] = g->textMod(rhstext);
+      else if(rhs.eat("from ")) L.context->objs[L.name] = g->fromMod(rhs);
       else L.context->objs[L.name] = findObj(rhs);
     }
   }
@@ -162,6 +171,7 @@ str VarContainer::srhs(xstr rhs) {
   int index = rand()%numparts;
   xstr result = parts(index);
   replaceVars(result);
+  result.replaceMe("\\n","\n");
   return result;
 }
 
@@ -197,19 +207,20 @@ str VarContainer::getLabel() {
 void VarContainer::dump() {
   if(ints.size()) {
     printf("--ints: ");
-    for(auto const& item: ints) printf("%s->%d, ",-item.first,item.second);
+    for(auto const& item: ints) colprintf("$CYAN %s $LIGHTGRAY %d, ",-item.first,item.second);
     puts("");
   }
   if(strs.size()) {
     printf("--strs: ");
-    for(auto const& item: strs) printf("%s->%s, ",-item.first,-item.second);
+    for(auto const& item: strs) colprintf("$CYAN %s $LIGHTGRAY %s, ",-item.first,-item.second);
     puts("");
   }
   if(objs.size()) {
     printf("--objs: ");
     for(auto const& item: objs) {
-      if(item.second!=NULL) printf("%s->%s, ",-item.first,-item.second->id);
-      else printf("%s->%s, ",-item.first,"NULL");
+      colprintf("$CYAN %s $LIGHTGRAY ",-item.first);
+      if(item.second!=NULL) printf("%s, ",-item.second->id);
+      else colprintf("$RED %s $LIGHTGRAY, ",-item.first,"NULL");
     }
     puts("");
   }

@@ -56,10 +56,9 @@ int main(int argc, char** argv) {
 void move(Game& game, Node* here) {
 	clear();
 	xstr templ = -here->findStr(".~text");
+  templ+= game.addtext;
 	templ.replaceMe("''","\"");
 	wprint(here->srhs(templ));
-  puts(game.addtext);
-//  printf("%d %d %d",game.addtext[0], game.addtext[1], game.addtext[2]);
   game.addtext = "";
   xstr statusbar = -game.findStr("~statusbar");
   if(statusbar) { puts("\n"); wprint(here->srhs(statusbar)); }

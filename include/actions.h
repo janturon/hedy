@@ -58,6 +58,7 @@ public:
     T doPickAsk(std::map<T,str,U>& src, T def, bool must=false);
   void run();
 	void dump();
+  void dumpMore();
 };
 
 template<class T>
@@ -102,8 +103,9 @@ T Mod::doPickAsk(std::map<T,str,U>& src, T def, bool must) {
 		if(doPickAskSkip(kv.first)) continue;
 		char letter = letters[i];
 		xstr word = -kv.second;
+    const char* space = word.indexOf("\\n")>-1 ? "" : "  ";
 		keys.insert(std::make_pair(letter,kv.first));
-		colprintf("$LIGHTGREEN %c$LIGHTGRAY : %s  ",letter,-srhs(word));
+		colprintf("$LIGHTGREEN %c$LIGHTGRAY : %s%s",letter,-srhs(word),space);
 		++i;
 	}
 	puts("");

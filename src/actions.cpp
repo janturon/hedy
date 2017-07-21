@@ -14,12 +14,12 @@ Mod* Mod::parseSingleLine(Game* g, xstr& line, char pass) {
   line.eat("mod ");
   xstr id = line.movevar();
   if(pass==1) {
-    Mod* mod = new Mod(g,id);
-    if(str text = line.movetext()) mod->strs["text"] = text;
-		else mod->strs["text"] = id;
 		VarInfo vi = g->getVar(id);
-    g->addMod(mod);
+    Mod* mod = new Mod(g,id);
+    mod->objs["context"] = vi.context==g ? mod : vi.context;
  		if(vi.context!=g) vi.context->objs[vi.name] = mod;
+    if(str text = line.movetext()) mod->strs["text"] = text;
+    g->addMod(mod);
     return mod;
   }
   else {
@@ -98,14 +98,15 @@ bool Mod::evalEquation(xstr s) {
   else if(L.type=='$') {
 		if(op!='=') throw report("Mod::evalEquation()" E_BADSYNTAX D_VAR,-s);
 		VarContainer* l = getObj(L.name,L.context);
+		xstr id = s.movevar();
     if(l!=none) {
-  		xstr id = s.movevar();
   		if(id=="node") result = l->type=='n';
       else if(id=="item") result = l->type=='i';
   		else if(id=="mod") result = l->type=='m';
   		else if(id=="action") result = l->type=='a';
   		else result = l==findObj(id);
     }
+    else result = id=="null";
   }
 	else throw report("Mod::evalEquation()?" E_BADSYNTAX D_VAR,-s);
 	return result;
@@ -178,7 +179,7 @@ void Mod::executeLine(xstr& line) {
 	else if(cmd.eat("run ")) {
 		xstr id = cmd.movevar();
 		try {
-			Mod* nextMod = g->getMod(id);
+			Mod* nextMod = g->getMod(id,this);
 			nextMod->run();
 		}
 		catch(const char*& ex) {
@@ -189,7 +190,10 @@ void Mod::executeLine(xstr& line) {
 }
 
 void Mod::showdump(xstr& line) {
-	if(line.eat("vars")) { clear(); g->dump(); clear(); }
+  clear();
+	if(line.eat("vars")) g->dump();
+	if(line.eat("commands")) g->dumpMore();
+  clear();
 }
 
 void Mod::message(xstr& cmd, bool strict) {
@@ -198,7 +202,7 @@ void Mod::message(xstr& cmd, bool strict) {
   wprint(srhs(msg));
   if(strict) colprintf("\n\n$GREEN %s $LIGHTGRAY", G_WAIT);
 	getkey();
-  if(strict) clear();
+  puts("");
 }
 
 void Mod::text(xstr& cmd) {
@@ -207,8 +211,13 @@ void Mod::text(xstr& cmd) {
 }
 
 void Mod::dump() {
-	printf("(%s) ",-id);
-//	for(auto const& i: lines) printf("  %s\n",-i);
+  colprintf("$BROWN %s $LIGHTGRAY \n",-id);
+  VarContainer::dump();
+}
+
+void Mod::dumpMore() {
+	colprintf("$WHITE (%s) $LIGHTGRAY \n",-id);
+	for(auto const& i: lines) printf("  %s\n",-i);
 }
 
 template<> bool Mod::doPickAskSkip(Action* action) { return action->findInt(".@hide",0)==1; }
@@ -327,10 +336,10 @@ VarContainer* Mod::doPickOne(xstr& cmd, VarInfo& vi) {
 	if(select.size()==0) return none;
 	xstr brackets;
 	char fn = ' ';
-	if(brackets=cmd.moves("min( %63[^)])")) fn = '<';
-	else if(brackets=cmd.moves("max( %63[^)])")) fn = '>';
-	else if(brackets=cmd.moves("ask( \"%63[^\"]\" )")) fn = '?';
-	else if(brackets=cmd.moves("ask!( \"%63[^\"]\" )")) fn = '!';
+	if(brackets=cmd.moves("min( %[^)])")) fn = '<';
+	else if(brackets=cmd.moves("max( %[^)])")) fn = '>';
+	else if(brackets=cmd.moves("ask( \"%[^\"]\" )")) fn = '?';
+	else if(brackets=cmd.moves("ask!( \"%[^\"]\" )")) fn = '!';
 	if(fn=='<' || fn=='>') {
 		xstr var = brackets.movevar();
 		VarInfo L = getVar(var);
@@ -381,7 +390,7 @@ int Mod::doPickOneArr(xstr& cmd, Array<int>& array) {
 		result = -1000000000;
 		for(auto const& kv: array.lines) if(kv.first>result) result = kv.first;
 	}
-	else if(xstr question=cmd.moves("ask!( \"%63[^\"]\" )")) {
+	else if(xstr question=cmd.moves("ask!( \"%[^\"]\" )")) {
 		puts(question);
 		puts("");
 		result = doPickAsk<int>(array.lines,nan,true);
