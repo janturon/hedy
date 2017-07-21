@@ -1,3 +1,12 @@
+0.5 (TBD)
+objektová pole
+
+0.4
+přidány příklady do /doc
+přidána funkce random
+výběr indexu z pole
+opraveny chyby práce s poli
+
 0.3
 do objektových proměnných je možné ukládat i akce
 v příkazu text se interpretují barvy a proměnné
@@ -7,7 +16,7 @@ odstraněna chyba špatného přičítání
 odstraněna chyba porovnávání s null
 odstraněna chyba dlouhých vět v otázkách
 odstraněna chyba barevného tisku dolaru
-kontext lokálních proměnných lokálního mohu je vlastník modu, ne mod
+kontext lokálních proměnných lokálního modu je vlastník modu, ne mod
 
 item beton "beton"
   .@var:= 42

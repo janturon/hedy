@@ -46,6 +46,7 @@ public:
 	// get value of non-parsed objects
   int findInt(const char* cline, int def=nan);
   str findStr(const char* cline, str def=nos);
+  str findStrArr(xstr& line, str& def);
   VarContainer* findObj(const char* cline, VarContainer* def=none);
 
   VarContainer(Game* game, const str id);

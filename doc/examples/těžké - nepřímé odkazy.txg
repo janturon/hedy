@@ -1,0 +1,39 @@
+# nepřímé odkazy usnadňují práci s věcí, kterou lze použít na mnoha místech
+# zkuste na různých místech zdravit a koukat se na hodinky
+
+# standardní akce jít
+action go "Jít"
+  select $here from paths ask("Kam chceš jít?")
+
+# vyber a spusť předmět s lokálním modem .$use
+action use "Použít"
+  .$item:= null
+  select .$item from items filter($use=mod) ask("Co chceš použít?")
+  if .$item=item then run .$item.$use
+
+# lokální use obsahuje přímý odkaz
+# vždy zobrazí stejnou uvedenou zprávu
+item hodinky
+  .$use:= "Podíval ses na hodinky. Čas 10:25, akorát."
+
+# lokální .$use obsahuje nepřímý odkaz:
+# ukazuje na .$zdravim uzlu, kde se hráč právě nachází
+# pokud uzel .$zdravim nemá, použije se mod za slovem default (nepovinné)
+item pozdrav
+  .$use:= from $here.$zdravim default "Pozdravil jsi jen tak nazdařbůh."
+
+initial node vstup "Jsi u vstupní brány, vidíš vrátného."
+  .$zdravim:= "Pozdravil jsi vrátného."
+
+node nadvori "Jdeš přes nádvoří."
+
+node aula "Jsi v aule se spoustou diváků."
+  .$zdravim:= "Pozdravil jsi diváky."
+
+map
+  vstup + nadvori "na nádvoří" "k bráně"
+  nadvori + aula "do auly" "na nádvoří"
+
+# vyzkoušejte si upravit přímý odkaz hodinky.$use tak, aby se čas zvýšil o minutu při každém přesunu
+
+# definujte hodinky.$use jako nepřímý odkaz tak, aby se čas zvýšil o minutu při přechodu mezi vstupem a nádvořím a o čtyři minuty při cestě mezi nádvořím a aulou

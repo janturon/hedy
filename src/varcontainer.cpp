@@ -96,6 +96,7 @@ int VarContainer::findInt(const char* cline, int def) {
 str VarContainer::findStr(const char* cline, str def) {
 	xstr line = cline;
   if(str text = line.movetext()) return text;
+  if(line.indexOf("[")>-1) return findStrArr(line,def);
 	VarInfo vi = getVar(line);
 	try {
 		if(vi.type=='~') return getStr(vi.name,vi.context);
@@ -105,6 +106,28 @@ str VarContainer::findStr(const char* cline, str def) {
 		if(def!="") return def;
 		else throw ex;
 	}
+}
+
+str VarContainer::findStrArr(xstr& line, str& def) {
+  line.eat(" ");
+  char type = line.movechar();
+  str arrid = line.moveid();
+  if(line.movechar()!='[') throw report("VarContainer::findStrArr()", E_BADSYNTAX);
+  xstr arrkey = line.movevar();
+  if(line.movechar()!=']') throw report("VarContainer::findStrArr()", E_BADSYNTAX);
+  if(!arrkey) throw report("VarContainer::findStr()", E_BADSYNTAX);
+  if(type=='@') {
+    Array<int>* src = g->getArray<int>(arrid);
+    int val = irhs(arrkey);
+    auto result = src->lines.find(val);
+    return result==src->lines.end() ? def : result->second;
+  }
+  if(type=='~') {
+    Array<xstr>* src = g->getArray<xstr>(arrid);
+    int val = findStr(arrkey);
+    auto result = src->lines.find(val);
+    return result==src->lines.end() ? def : result->second;
+  }
 }
 
 VarContainer* VarContainer::findObj(const char* cline, VarContainer* def) {
@@ -148,6 +171,7 @@ int VarContainer::irhs(xstr rhs) {
     if(rhs.eat("+")) { op = '+'; continue; }
     if(rhs.eat("-")) { op = '-'; continue; }
     int part = rhs.movei("%d",nan);
+    if(str rnd=rhs.moves("random( %[0-9] )")) part = rand() % rnd.movei() + 1;
     if(part==nan) {
 			VarInfo vi = getVar(rhs);
 			part = getInt(vi.name,vi.context);

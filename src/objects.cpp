@@ -156,8 +156,7 @@ void Array<xstr>::parseLine(xstr& line, char pass) {
 template<>
 void Array<str>::parseLine(xstr& line, char pass) {
 	if(pass==2) {
-		str key = line.eat("$") ? "$" : "";
-		key+= line.moveid();
+		str key = line.movevar();
 		str val = line.movetext();
 		lines.insert(make_pair(key,val));
 	}

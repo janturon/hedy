@@ -1,0 +1,27 @@
+# předměty a uzly obsahují pouze proměnné
+# akce a mody obsahují pouze příkazy, jejich proměnné se definují z globálního kontextu, viz rozdíl
+# horizontální odsazování je nepovinné
+
+# definuje uzel test a proměnnou test.@var (e součástí definice)
+node test "Test"
+  .@var:= 42
+
+# totéž
+# zadávání proměnných v uzlu nebo předmětu ukončuje prázdná řádka nebo řádek nezačínající na tečku (komentáře se odstraňují před zpracováním kódu)
+node test "Test"
+
+test.@var:= 42
+
+# až po spuštění modu test se nastaví test.@var (je to příkaz)
+mod test
+  .@var:= 42
+
+# nastaví test.@var před jeho spuštěním
+# prázdná řádka ukončuje zadávání příkazů
+mod test
+
+test.@var:= 42
+
+# Zadávání příkazů a definic záměrně nekončí značkou typu "end" nebo "}" nebo snad </mod>, jak bývá běžné ve většině jazyků. Jazyk Hedy byl navržen ke snadnému přizpůsobení prostých textů a značky se připisují pouze na začátek oblastí. (Vyjímka jsou uvozovky u krátkých textů, dlouhé se zadávají přes >>>)
+
+# Ukončovací značky zjednodušují a zjednoznačňují analýzu textu, ale radikálně zvyšují množství metadat a snižují čitelnost: běžný HTML kód obsahuje přes 50% metadat a úsporný JSON je těžko čitelný a jeho ruční převod z textu nudný a zdlouhavý. Syntaxe jazyka Hedy se vyvíjela přes dva roky na základě praktického použití.

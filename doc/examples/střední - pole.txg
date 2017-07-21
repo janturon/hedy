@@ -1,0 +1,42 @@
+initial node test "Náhodná karta"
+
+array @karty
+  1 "Sedma"
+  2 "Osma"
+  3 "Devítka"
+  4 "Desítka"
+  5 "Spodek"
+  6 "Svršek"
+  7 "Král"
+  8 "Eso"
+
+array ~barvy
+  "kul"
+  "srdc"
+  "žalud"
+  "list"
+
+mod randomCard
+  select @karta from @karty
+  ~karta:= @karty[@karta]
+  select ~barva from ~barvy
+
+mod showCard
+  .~rod:= "ový"
+  if ~karta="Sedma" or ~karta="Osma" then .~rod:= "ová"
+  if ~karta="Devítka" or ~karta="Desítka" then .~rod:= "ová"
+  if ~karta="Eso" then .~rod:= "ové"
+  message "[B{~karta} {~barva}{.~rod}]"
+
+action a1test "Náhodná karta"
+  run randomCard
+  run showCard
+
+action a2test "Porovnání karet"
+  run randomCard
+  @karta1:= @karta
+  ~karta1:= ~karta
+  run randomCard
+  if @karta>@karta1 then message "{~karta} je větší než {~karta1}"
+  if @karta<@karta1 then message "{~karta} je menší než {~karta1}"
+  if @karta=@karta1 then message "{~karta} je stejná jako {~karta1}"

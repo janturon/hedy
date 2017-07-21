@@ -253,13 +253,13 @@ void Mod::doLoop(xstr& cmd, char type) {
 
 void Mod::doLoopArr(xstr& cmd, VarInfo& vi, char type) {
 	char vitype = cmd.movechar();
-	if(vitype!=vi.type) throw report("Mod::doSelectArr()" E_MISMATCH D_VAR,~cmd);
+	if(vitype!=vi.type) throw report("Mod::doLoopArr()" E_MISMATCH D_VAR,~cmd);
 	str arrid = cmd.moveid();
 	if(vitype=='@') {
 		Array<int> array = *(g->getArray<int>(arrid));
 		doFilterArr(cmd,array);
     if(type=='s') {
-			int result = doPickOneArr(cmd,array);
+			int result = doPickOneArr(cmd,array,nan);
 			if(result!=nan) vi.context->ints[vi.name] = result;
 		}
   	else if(type=='f') for(auto const& kv: array.lines) {
@@ -271,7 +271,8 @@ void Mod::doLoopArr(xstr& cmd, VarInfo& vi, char type) {
 		Array<xstr> array = *(g->getArray<xstr>(arrid));
 		doFilterArr(cmd,array);
     if(type=='s') {
-			vi.context->strs[vi.name] = doPickOneArr(cmd,array);
+      xstr def = -nos;
+			vi.context->strs[vi.name] = doPickOneArr(cmd,array,def);
 		}
 		else if(type=='f') for(auto const& kv: array.lines) {
 			vi.context->strs[vi.name] = kv.first;
@@ -379,40 +380,6 @@ VarContainer* Mod::doPickInt(char fn, str& varName) {
 	return result;
 }
 
-int Mod::doPickOneArr(xstr& cmd, Array<int>& array) {
-	if(array.lines.size()==0) return nan;
-	int result;
-	if(cmd.eat("min( @.key )")) {
-		result = 1000000000;
-		for(auto const& kv: array.lines) if(kv.first<result) result = kv.first;
-	}
-	else if(cmd.eat("min( @.key )")) {
-		result = -1000000000;
-		for(auto const& kv: array.lines) if(kv.first>result) result = kv.first;
-	}
-	else if(xstr question=cmd.moves("ask!( \"%[^\"]\" )")) {
-		puts(question);
-		puts("");
-		result = doPickAsk<int>(array.lines,nan,true);
-	}
-	else if(xstr question=cmd.moves("ask( \"%63[^\"]\" )")) {
-		puts(question);
-		puts("");
-		result = doPickAsk<int>(array.lines,nan);
-	}
-	return result;
-}
-
-xstr Mod::doPickOneArr(xstr& cmd, Array<xstr>& array) {
-	if(array.lines.size()==0) return "";
-	xstr result;
-  if(xstr question=cmd.moves("ask( \"%63[^\"]\" )")) {
-		puts(question);
-		puts("");
-		result = doPickAsk<xstr>(array.lines,"");
-	}
-	return result;
-}
 
 /*
 	Action

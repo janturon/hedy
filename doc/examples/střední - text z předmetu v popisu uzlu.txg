@@ -1,0 +1,19 @@
+# pokud předmět leží v nějakém uzlu, je možné na to upozornit přímo v popisu uzlu
+# v příkladě je pozice předmětu v proměnné .$place a přidaný text v .~see
+
+mod update
+  foreach $item from items filter($place=$here) text "{$item.~see}"
+
+initial node modry "Modrý pokoj."
+node cerveny "Červený pokoj."
+
+item modra "Modrá krabice"
+  .$place:= modry
+  .~see:= "Je tu modrá krabice."
+
+item cervena "Červená krabice"
+  .$place:= cerveny
+  .~see:= "Je tu červená krabice."
+
+map
+  modry + cerveny "do červeného pokoje" "do modrého pokoje"

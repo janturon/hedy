@@ -1,0 +1,34 @@
+
+# globální proměnná
+@test:= 42
+
+# lokální proměnná pytel.@test (test patřící pytli)
+item pytel
+  .@test:= 42
+  .~text:= "velký pytel"
+
+# "patřící" ukazuje na KONTEXT proměnné (to, co je před tečkou)
+# kontext je možné vynechat při zadávání zevnitř (viz výše)
+
+# ukazatelé na objekt začínají na $
+$vec:= pytel
+
+# přiřazení textu objektu vytvoří mod s jediným příkazem message
+item pytlik
+  .~text:= "malý pytlík"
+  .$seber:= "Sebral jsi pytlík"
+
+# zápis lokálního modu, který obsahuje více než message
+mod pytlik.$pouzij
+  message "Použil jsi pytlík"
+  $vec:= pytlik
+
+# máme definovánu pouze jednu akci, bude se provádět automaticky dokola
+action testPrommennych "Test proměnných"
+  message "Věc je {$vec}."
+  run pytlik.$seber
+  run pytlik.$pouzij
+  message "Věc je {$vec}."
+
+# úvodní uzel musí být v každé hře
+initial node misto ":-)"

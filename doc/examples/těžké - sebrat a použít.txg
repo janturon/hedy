@@ -1,0 +1,78 @@
+# Možná implementace, jak sebrat a použít předměty.
+#
+# 1. Vytvoříme uzel "bag", který není nikde na mapě, má roli inventáře hráče
+# 2. Proměnná .$place ukazuje na uzel, kde se předmět nachází
+# 3. Identifikátory akcí prefixujeme a1..an kvůli pořadí, ve kterém se zobrazí
+# 4. Akce "Použít"
+#  - lokální proměnné .$item přiřadíme null
+#  - vybereme všechny předměty, které má hráč v inventáři a mají mod .$use
+#  - zeptáme se, co chce použít (hráč může stisknout ESC) a uložíme do $.item
+#  - pokud si vybral předmět, spustíme jeho mod .$use
+#  - .$item znovu přiřadíme null
+#  - provedeme výběr znovu a bez ask (vybere se náhodný předmět)
+#  - pokud předmět existuje, hráč stisknul ESC ("Nic jsi nepoužil")
+#  - pokud nebyla splněna ani jedna z podmínek, hráč nic neměl
+#
+# 5. Akce "Sebrat":
+#  - lokální proměnné .$item přiřadíme null
+#  - vybereme všechny předměty, které se nachází na místě hráče ($here)
+#  - zeptáme se, co chce sebrat (hráč může stisknout ESC) a uložíme do $.item
+#  - pokud na místě nic není nebo hráč stisknul ESC, "Nic jsi nesebral"
+#  - pokračujeme, pouze pokud předchozí podmínky nebyly splněny (hráč sebral)
+#  - pokud je napsán lokální mod .$pick daného předmětu, spustíme jej
+#  - v opačném případě spustíme výchozí mod a3pick.$default
+#    - tento mod vypíše "Sebral jsi ..." a název sebraného předmětu
+#    - .$place tohoto předmětu nastaví na bag
+#
+# petarda používá výchozí mod pro sebrání a použití zmízí z inventáře
+# ozubené kolečko jse sebrat, a nejde použít
+# posvátná kniha nejde sebrat (vypíše se hláška)
+
+node bag
+
+action a1go "Jít"
+  select $here from paths ask("Kam chceš jít?")
+
+action a2use "Použít"
+  .$item:= null
+  select .$item from items filter($place=bag) filter($use=mod) ask("Co chceš použít?")
+  if .$item=item then run .$item.$use
+  .$item:= null
+  select .$item from items filter($place=bag) filter($use=mod)
+  if .$item=item then message "Nic jsi nepoužil."
+  check noif
+  message "Nic nemáš."
+
+action a3pick "Sebrat"
+  .$item:= null
+  select .$item from items filter($place=$here) ask("Co chceš sebrat?")
+  if not .$item=item then message "Nic jsi nesebral."
+  check noif
+  if .$item.$pick=mod then run .$item.$pick
+  if not .$item.$pick=mod then run .$default
+
+mod a3pick.$default
+  message "Sebral jsi {.$item.~text}."
+  .$item.$place:= bag
+
+initial node sin "Síň pokladů. Je tu spousta věcí (pokud jsi je nevybral)."
+node chodba "Chodba."
+
+### předměty a jejich mody
+
+item petarda "petardu"
+  .$place:= sin
+
+mod petarda.$use
+  message "Odpálil jsi petardu. Zaduněla rána, až ti zalehlo v uších."
+  .$place:= null
+
+item kolecko "ozubené kolečko"
+  .$place:= sin
+
+item kniha "posvátná kniha"
+  .$place:= sin
+  .$pick:= "Jsi teista, posvátné knihy nekradeš."
+
+map
+  sin + chodba "na chodbu" "do síně pokladů"

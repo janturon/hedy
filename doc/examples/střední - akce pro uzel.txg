@@ -1,0 +1,26 @@
+# Často je třeba akce pouze v jednom uzlu
+# následující kód nabídne takovou akci v uzlu 'uzel.$action'
+action go "Jít"
+  if $here.$action=action then $here.$action.@hide:= 1
+  select $here from paths ask("Kam chceš jít?")
+  if $here.$action=action then $here.$action.@hide:= 0
+
+
+# Příklad
+initial node krizovatka "Stojíš na křižovatce."
+
+node vpravo "Jdeš po cestě."
+  .~smer:= "vpravo od křižovatky"
+  .$action:= kompas
+
+node vlevo "Jdeš po cestě."
+  .~smer:= "vlevo od křižovatky"
+  .$action:= kompas
+
+kompas.@hide:= 1
+action kompas "Zkontrolovat kompas"
+  message "Kompas ti říká, že jsi {$here.~smer}."
+
+map
+  krizovatka + vlevo "doleva" "na křižovatku"
+  krizovatka + vpravo "doprava" "na křižovatku"

@@ -46,8 +46,7 @@ protected:
 	void initDataArr(xstr& cmd);
 	void doLoopArr(xstr& cmd, VarInfo& vi, char type);
 	template<class T> void doFilterArr(xstr& cmd, Array<T>& array);
-  int doPickOneArr(xstr& cmd, Array<int>& array);
-	xstr doPickOneArr(xstr& cmd, Array<xstr>& array);
+  template<class T> T doPickOneArr(xstr& cmd, Array<T>& array, T def);
 	template<class T> bool doPickAskSkip(T);
 
 public:
@@ -78,11 +77,21 @@ template<class T>
 void Mod::doFilterArr(xstr& cmd, Array<T>& array) {
 	if(array.lines.size()==0) return;
 	while(xstr filter=cmd.moves("filter(%63[^)])")) {
-		if(type(T)==type(int)) filter.eat("@.key");
-		else if(type(T)==type(xstr)) filter.eat("~.key");
+    bool byval = false;
+		if(type(T)==type(int)) filter.eat("@key");
+		else if(type(T)==type(xstr)) filter.eat("~key");
+    else if(filter.eat("~val")) byval = true;
 		else throw report("Action::doFilterArr()" E_BADSYNTAX);
+    filter.eat(" ");
 		char op = filter.movechar();
-		for(auto const& kv: array.lines) {
+    if(byval && op!='=') throw report("Action::doFilterArr()" E_BADSYNTAX);
+		if (byval) for(auto const& kv: array.lines) {
+      xstr lhs = -kv.second;
+      xstr rhs = filter.movetext();
+      bool erase = !varOp(lhs,op,rhs);
+      if(erase) array.lines.erase(lhs);
+    }
+    else for(auto const& kv: array.lines) {
 			T lhs = kv.first;
 			bool erase = false;
 			if(type(T)==type(int)) int rhs=filter.movei(), erase = !varOp(lhs,op,rhs);
@@ -117,6 +126,38 @@ T Mod::doPickAsk(std::map<T,str,U>& src, T def, bool must) {
 	} while(1);
 	CHOSEN:
 	return keys[letter];
+}
+
+template<class T>
+T Mod::doPickOneArr(xstr& cmd, Array<T>& array, T def) {
+	if(array.lines.size()==0) return def;
+  auto fst = array.lines.begin();
+	T result = fst->first;
+  if(type(T)==type(int)) {
+  	if(cmd.eat("min( @.key )")) {
+  		for(auto const& kv: array.lines) if(kv.first<result) result = kv.first;
+  	}
+  	else if(cmd.eat("min( @.key )")) {
+  		for(auto const& kv: array.lines) if(result<kv.first) result = kv.first;
+  	}
+  }
+	if(xstr question=cmd.moves("ask!( \"%[^\"]\" )")) {
+		puts(question);
+		puts("");
+		result = doPickAsk<T>(array.lines,def,true);
+	}
+	else if(xstr question=cmd.moves("ask( \"%63[^\"]\" )")) {
+		puts(question);
+		puts("");
+		result = doPickAsk<T>(array.lines,def);
+	}
+	else { // pick a random item
+		auto rnd = array.lines.begin();
+    int index = rand()%array.lines.size();
+		advance(rnd,index);
+		return rnd->first;
+	}
+	return result;
 }
 
 class Action : public Mod {
