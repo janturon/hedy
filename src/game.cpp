@@ -56,6 +56,27 @@ void Game::addMod(Mod* mod) {
   if(!result.second) throw report("Game::addMod()" E_REPEATED D_MOD,-mod->id);
 }
 
+void Game::addIfMod(Mod* owner, str& cond) {
+  str key = "_imod";
+  key+= ++g->modcnt;
+  Mod* ifmod = new Mod(g,key);
+  ifmod->objs["context"] = owner;
+  addMod(ifmod);
+  sprintf(str::buffer,"if %s then run %s",-cond,-key);
+  xstr ifline = str::buffer;
+  owner->parseLine(ifline,2);
+  auto ikey = make_pair(owner,cond);
+  imods[ikey] = key;
+}
+
+Mod* Game::getIfMod(Mod* owner, str& cond) {
+  auto ikey = make_pair(owner,cond);
+	auto it = imods.find(ikey);
+  if(it==imods.end()) throw report("Game::getIfMod()" E_NOTFOUND D_MOD D_VAR, -owner->id, -cond);
+  str key = it->second;
+  return getMod(key);
+}
+
 Mod* Game::textMod(xstr& text) {
   str key = "_tmod";
   key+= ++modcnt;
@@ -133,28 +154,28 @@ str& Game::getMacro(str key) {
 }
 
 template <>
-Array<int>* Game::getArray(str& key) {
+Array<int>* Game::getArray<int>(str& key) {
   auto result = iarrays.find(key);
 	if(result!=iarrays.end()) return result->second;
-	auto val = new Array<int>();
+	auto val = new Array<int>(this);
 	iarrays.insert(make_pair(key,val));
 	return val;
 }
 
 template <>
-Array<xstr>* Game::getArray(str& key) {
+Array<str>* Game::getArray<str>(str& key) {
   auto result = sarrays.find(key);
 	if(result!=sarrays.end()) return result->second;
-	auto val = new Array<xstr>();
+	auto val = new Array<str>(this);
 	sarrays.insert(make_pair(key,val));
 	return val;
 }
 
 template <>
-Array<str>* Game::getArray(str& key) {
+Array<VarContainer*>* Game::getArray<VarContainer*>(str& key) {
   auto result = oarrays.find(key);
 	if(result!=oarrays.end()) return result->second;
-	auto val = new Array<str>();
+	auto val = new Array<VarContainer*>(this);
 	oarrays.insert(make_pair(key,val));
 	return val;
 }
@@ -207,16 +228,16 @@ void Game::dump() {
 			for(pair<int,str> const& ch: iarray->lines) printf("(%d=%s) ", ch.first, -ch.second);
 			puts("");
 		}
-		for(pair<str,Array<xstr>*> const& kv: sarrays) {
+		for(pair<str,Array<str>*> const& kv: sarrays) {
 			printf("--%s: ", -kv.first);
-			Array<xstr>* sarray = kv.second;
-			for(pair<xstr,str> const& ch: sarray->lines) printf("(%s=%s) ", -ch.first, -ch.second);
+			Array<str>* sarray = kv.second;
+			for(pair<str,str> const& ch: sarray->lines) printf("(%s=%s) ", -ch.first, -ch.second);
 			puts("");
 		}
-		for(pair<str,Array<str>*> const& kv: oarrays) {
+		for(pair<str,Array<VarContainer*>*> const& kv: oarrays) {
 			printf("--%s: ", -kv.first);
-			Array<str>* oarray = kv.second;
-			for(pair<str,str> const& ch: oarray->lines) printf("(%s=%s) ", -ch.first, -ch.second);
+			Array<VarContainer*>* oarray = kv.second;
+			for(pair<VarContainer*,str> const& ch: oarray->lines) printf("(%s=%s) ", -ch.first->id, -ch.second);
 			puts("");
 		}
 	}

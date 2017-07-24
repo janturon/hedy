@@ -8,7 +8,9 @@ class Node;
 
 template <class T>
 class Array : public Parsable {
+  Game* g;
 public:
+  Array(Game* g);
 	std::map<T,str> lines;
   static Array<T>* parseSingleLine(Game* g, xstr& line, char pass);
   void parseLine(xstr& line, char pass);

@@ -7,10 +7,11 @@ struct Game : VarContainer {
 	Path* path;
 	std::map<Action*,str,VCLess<Action> > actions;
   std::map<str,VarContainer*> objects;
+  std::map<std::pair<VarContainer*,str>,str> imods;
 	std::map<str,str> macros;
 	std::map<str,Array<int>*> iarrays;
-	std::map<str,Array<xstr>*> sarrays;
-	std::map<str,Array<str>*> oarrays;
+	std::map<str,Array<str>*> sarrays;
+	std::map<str,Array<VarContainer*>*> oarrays;
   str intro;
   xstr addtext;
   int modcnt; // counter for text mods id
@@ -25,8 +26,10 @@ struct Game : VarContainer {
 	template <class T> Array<T>* getArray(str& key);
   void addNode(Node* node);
   void addItem(Item* node);
-  void addMod(Mod* mod);
   void addAction(Action* action);
+  void addMod(Mod* mod);
+  void addIfMod(Mod* owner, str& cond);
+  Mod* getIfMod(Mod* owner, str& cond);
   Mod* textMod(xstr& text);
   Mod* fromMod(xstr& text);
   static void parseSingleLine(Game* g, xstr& line, char pass);

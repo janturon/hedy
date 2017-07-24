@@ -26,6 +26,7 @@ protected:
 public:
 	// get value from context (in getVar)
   VarContainer* getVC(const char* id);
+  template<typename T> T* getPtr(VarInfo& vi);
   VarContainer* getObj(const char* id, VarContainer* context=NULL);
 	str getStr(const char* id, VarContainer* context=NULL);
 	int getInt(const char* id, VarContainer* context=NULL);

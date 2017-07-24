@@ -153,8 +153,8 @@ void Parser::parseSectionLines(xstr& line, char pass) {
   else if(line.startsWith("mod ")) src = Mod::parseSingleLine(g,line,pass);
   else if(line.startsWith("action ")) src = Action::parseSingleLine(g,line,pass);
   else if(line.startsWith("array @")) src = Array<int>::parseSingleLine(g,line,pass);
-  else if(line.startsWith("array ~")) src = Array<xstr>::parseSingleLine(g,line,pass);
-  else if(line.startsWith("array $")) src = Array<str>::parseSingleLine(g,line,pass);
+  else if(line.startsWith("array ~")) src = Array<str>::parseSingleLine(g,line,pass);
+  else if(line.startsWith("array $")) src = Array<VarContainer*>::parseSingleLine(g,line,pass);
 	if(src!=NULL) parseLines(line,pass,src,stop);
 	else Game::parseSingleLine(g,line,pass);
 }

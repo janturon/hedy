@@ -13,18 +13,36 @@ Mod::Mod(Game* g, const str _id)
 Mod* Mod::parseSingleLine(Game* g, xstr& line, char pass) {
   line.eat("mod ");
   xstr id = line.movevar();
+  str text = line.movetext(); // due to compatibility with other objects
+  str cond = line.eat("if ") ? ~line : "";
+  Mod* mod;
   if(pass==1) {
 		VarInfo vi = g->getVar(id);
-    Mod* mod = new Mod(g,id);
+    bool add = true;
+    if(cond) try {
+      mod = g->getMod(id); add = false;
+    } catch(...) { mod = new Mod(g,id); }
+    else mod = new Mod(g,id);
+    if(cond) g->addIfMod(mod,cond);
     mod->objs["context"] = vi.context==g ? mod : vi.context;
  		if(vi.context!=g) vi.context->objs[vi.name] = mod;
-    if(str text = line.movetext()) mod->strs["text"] = text;
-    g->addMod(mod);
-    return mod;
+    if(text) mod->strs["text"] = text;
+    if(add) g->addMod(mod);
   }
   else {
-    return g->getMod(id);
+    mod = g->getMod(id);
+    if(cond) mod = g->getIfMod(mod,cond);
   }
+  return mod;
+}
+
+void Mod::parseLine(xstr& line, char pass) {
+  if(pass==2) {
+		for(auto const& kv: g->macros) {
+			line.replaceMe(kv.first,kv.second);
+		}
+		lines.push_back(line);
+	}
 }
 
 bool Mod::evalIf(str& s) {
@@ -117,7 +135,7 @@ bool Mod::varOp(int lval, char op, int rval) {
 		case '=':	return lval == rval;
 		case '<': return lval < rval;
 		case '>': return lval > rval;
-		default: throw report("Mod::varOp<int>()" E_BADSYNTAX);
+		default: throw report("Mod::varOp<int>()" E_BADSYNTAX "'%c'",op);
 	}
 }
 
@@ -130,22 +148,33 @@ bool Mod::varOp(str& lval, char op, str& rval) {
 	}
 }
 
-void Mod::parseLine(xstr& line, char pass) {
-  if(pass==2) {
-		for(auto const& kv: g->macros) {
-			line.replaceMe(kv.first,kv.second);
-		}
-		lines.push_back(line);
-	}
-}
-
 template<> int Mod::getKey<int>(xstr& cmd) { return cmd.movei(); }
-template<> xstr Mod::getKey<xstr>(xstr& cmd) { return cmd.movetext(); }
-template<> str Mod::getKey<str>(xstr& cmd) { return cmd.moveid(); }
+template<> str Mod::getKey<str>(xstr& cmd) { return cmd.movetext(); }
+template<> VarContainer* Mod::getKey<VarContainer*>(xstr& cmd) { return getVC(cmd.moveid()); }
 
 template<> Array<int>* Mod::getArray(str& arr) { return g->iarrays[arr]; }
-template<> Array<xstr>* Mod::getArray(str& arr) { return g->sarrays[arr]; }
-template<> Array<str>* Mod::getArray(str& arr) { return g->oarrays[arr]; }
+template<> Array<str>* Mod::getArray(str& arr) { return g->sarrays[arr]; }
+template<> Array<VarContainer*>* Mod::getArray(str& arr) { return g->oarrays[arr]; }
+
+template<> int Mod::empty<int>() { return nan; }
+template<> str Mod::empty<str>() { return nos; }
+template<> VarContainer* Mod::empty<VarContainer*>() { return none; }
+
+template<> bool Mod::doFilterArrErase(int& lhs, xstr filter) {
+	char op = filter.movechar();
+  int rhs = filter.movei();
+  return !varOp(lhs,op,rhs);
+}
+template<> bool Mod::doFilterArrErase(str& lhs, xstr filter) {
+	char op = filter.movechar();
+  str rhs=filter.movetext();
+  return !varOp(lhs,op,rhs);
+}
+template<> bool Mod::doFilterArrErase(VarContainer*& lhs, xstr filter) {
+	char op = filter.movechar();
+  str rhs=filter.moveid();
+  return g->objects[rhs] == lhs;
+}
 
 void Mod::run() {
   noif = true;
@@ -169,13 +198,13 @@ void Mod::executeLine(xstr& line) {
   else if(cmd.eat("message ")) message(cmd);
   else if(cmd.eat("text ")) text(cmd);
 	else if(cmd.eat("set @")) array<int>(cmd);
-	else if(cmd.eat("set ~")) array<xstr>(cmd);
-	else if(cmd.eat("set $")) array<str>(cmd);
+	else if(cmd.eat("set ~")) array<str>(cmd);
+	else if(cmd.eat("set $")) array<VarContainer*>(cmd);
   else if(cmd.indexOf(":=")>-1) parseVar(cmd,2);
 	else if(cmd.eat("?")) showdump(cmd);
 	else if(cmd.eat("path ")) g->path->parseLine(cmd,2);
-	else if(cmd.eat("select ")) doLoop(line,'s');
-	else if(cmd.eat("foreach ")) doLoop(line,'f');
+	else if(cmd.eat("select ")) doLoop(cmd,'s');
+	else if(cmd.eat("foreach ")) doLoop(cmd,'f');
 	else if(cmd.eat("run ")) {
 		xstr id = cmd.movevar();
 		try {
@@ -220,66 +249,42 @@ void Mod::dumpMore() {
 	for(auto const& i: lines) printf("  %s\n",-i);
 }
 
+template<class T> bool Mod::doPickAskSkip(T) { return false; }
 template<> bool Mod::doPickAskSkip(Action* action) { return action->findInt(".@hide",0)==1; }
-template<> bool Mod::doPickAskSkip(int) { return false; }
-template<> bool Mod::doPickAskSkip(xstr) { return false; }
-template<> bool Mod::doPickAskSkip(VarContainer*) { return false; }
 
 void Mod::doLoop(xstr& cmd, char type) {
 	select.clear();
-	if(type=='s') cmd.eat("select ");
-	if(type=='f') cmd.eat("foreach ");
 	VarInfo vi = getVar(cmd);
   cmd.eat("from ");
-	if(vi.type=='$') {
-		initData(cmd);
-	  doFilter(cmd);
-	 	if(type=='s') {
-    	auto objit = vi.context->objs.find(vi.name);
-      if(objit==vi.context->objs.end()) vi.context->objs[vi.name] = none;
-			VarContainer* result = doPickOne(cmd,vi);
-			if(result!=none) vi.context->objs[vi.name] = result;
-		}
-		else if(type=='f') {
-			xstr subcmd = ~cmd;
-			for(auto const& kv: select) {
-				vi.context->objs[vi.name] = kv.first;
-				Mod::executeLine(subcmd);
-			}
+  if(doLoopArr(cmd,vi,type)) return;
+	initData(cmd);
+  doFilter(cmd);
+ 	if(type=='s') {
+  	auto objit = vi.context->objs.find(vi.name);
+    if(objit==vi.context->objs.end()) vi.context->objs[vi.name] = none;
+		VarContainer* result = doPickOne(cmd,vi);
+		if(result!=none) vi.context->objs[vi.name] = result;
+	}
+	else if(type=='f') {
+		xstr subcmd = ~cmd;
+		for(auto const& kv: select) {
+			vi.context->objs[vi.name] = kv.first;
+			Mod::executeLine(subcmd);
 		}
 	}
-	else doLoopArr(cmd,vi,type);
 }
 
-void Mod::doLoopArr(xstr& cmd, VarInfo& vi, char type) {
+bool Mod::doLoopArr(xstr cmd, VarInfo& vi, char type) {
+  bool result = true;
+  cmd.eat(" ");
 	char vitype = cmd.movechar();
-	if(vitype!=vi.type) throw report("Mod::doLoopArr()" E_MISMATCH D_VAR,~cmd);
+	if(vitype!=vi.type) return false;
 	str arrid = cmd.moveid();
-	if(vitype=='@') {
-		Array<int> array = *(g->getArray<int>(arrid));
-		doFilterArr(cmd,array);
-    if(type=='s') {
-			int result = doPickOneArr(cmd,array,nan);
-			if(result!=nan) vi.context->ints[vi.name] = result;
-		}
-  	else if(type=='f') for(auto const& kv: array.lines) {
-			vi.context->ints[vi.name] = kv.first;
-			Mod::executeLine(cmd);
-		}
-	}
-	else if(vitype=='~') {
-		Array<xstr> array = *(g->getArray<xstr>(arrid));
-		doFilterArr(cmd,array);
-    if(type=='s') {
-      xstr def = -nos;
-			vi.context->strs[vi.name] = doPickOneArr(cmd,array,def);
-		}
-		else if(type=='f') for(auto const& kv: array.lines) {
-			vi.context->strs[vi.name] = kv.first;
-			Mod::executeLine(cmd);
-		}
-	}
-	else throw report("Mod::doSelectArr()" E_MISMATCH);
+	if(vitype=='@') doFilterArr<int>(cmd,vi,*g->getArray<int>(arrid),type);
+	else if(vitype=='~') doFilterArr<str>(cmd,vi,*g->getArray<str>(arrid),type);
+	else if(vitype=='$') doFilterArr<VarContainer*>(cmd,vi,*g->getArray<VarContainer*>(arrid),type);
+	else result = false;
+  return result;
 }
 
 void Mod::initData(xstr& cmd) {

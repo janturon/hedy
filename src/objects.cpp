@@ -124,6 +124,12 @@ void Item::dump() {
   VarContainer::dump();
 }
 
+/*
+  Array
+*/
+template<class T>
+Array<T>::Array(Game* g) : g(g) { }
+
 template<class T>
 Array<T>* Array<T>::parseSingleLine(Game* g, xstr& line, char pass) {
 	line.eat("array %*c"); // array @, array ~, array $
@@ -133,7 +139,7 @@ Array<T>* Array<T>::parseSingleLine(Game* g, xstr& line, char pass) {
 // explicit template instantiation
 template class Array<int>;
 template class Array<str>;
-template class Array<xstr>;
+template class Array<VarContainer*>;
 
 template<>
 void Array<int>::parseLine(xstr& line, char pass) {
@@ -145,19 +151,21 @@ void Array<int>::parseLine(xstr& line, char pass) {
 }
 
 template<>
-void Array<xstr>::parseLine(xstr& line, char pass) {
+void Array<str>::parseLine(xstr& line, char pass) {
 	if(pass==2) {
-		xstr key = line.movetext();
+		str key = line.movetext();
 		str val = line.movetext();
 		lines.insert(make_pair(key,val));
 	}
 }
 
 template<>
-void Array<str>::parseLine(xstr& line, char pass) {
+void Array<VarContainer*>::parseLine(xstr& line, char pass) {
 	if(pass==2) {
-		str key = line.movevar();
+		str skey = line.movevar();
+    VarContainer* key = g->getVC(-skey);
 		str val = line.movetext();
 		lines.insert(make_pair(key,val));
 	}
 }
+

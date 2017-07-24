@@ -16,6 +16,16 @@ array ~barvy
   "žalud"
   "list"
 
+mod testA
+  message "Test A"
+
+mod testB
+  message "Test B"
+
+array $mody
+  testA "áčko"
+  testB "béčko"
+
 mod randomCard
   select @karta from @karty
   ~karta:= @karty[@karta]
@@ -40,3 +50,8 @@ action a2test "Porovnání karet"
   if @karta>@karta1 then message "{~karta} je větší než {~karta1}"
   if @karta<@karta1 then message "{~karta} je menší než {~karta1}"
   if @karta=@karta1 then message "{~karta} je stejná jako {~karta1}"
+
+action a3test "Zvol mod"
+  .$mod:= null
+  select .$mod from $mody ask("Jaký mod chceš spustit?")
+  if .$mod=mod then run .$mod

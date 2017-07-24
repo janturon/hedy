@@ -44,9 +44,13 @@ protected:
 	VarContainer* doPickOne(xstr& cmd, VarInfo& vi);
   VarContainer* doPickInt(char fn, str& varName);
 	void initDataArr(xstr& cmd);
-	void doLoopArr(xstr& cmd, VarInfo& vi, char type);
-	template<class T> void doFilterArr(xstr& cmd, Array<T>& array);
-  template<class T> T doPickOneArr(xstr& cmd, Array<T>& array, T def);
+	bool doLoopArr(xstr cmd, VarInfo& vi, char type);
+  template<class T> T empty();
+  template<class T> void doFilterArr(xstr& cmd, VarInfo& vi, Array<T> array, char type); // works with Array<T> copy intentionally
+  template<class T> void doFilterArrKey(xstr& filter, Array<T>& array);
+  template<class T> void doFilterArrVal(xstr& filter, Array<T>& array);
+  template<class T> bool doFilterArrErase(T& lhs, xstr filter);
+  template<class T> T doPickOneArr(xstr& cmd, Array<T>& array);
 	template<class T> bool doPickAskSkip(T);
 
 public:
@@ -74,32 +78,48 @@ void Mod::array(xstr& cmd) {
 }
 
 template<class T>
-void Mod::doFilterArr(xstr& cmd, Array<T>& array) {
+void Mod::doFilterArr(xstr& cmd, VarInfo& vi, Array<T> array, char type) {
 	if(array.lines.size()==0) return;
 	while(xstr filter=cmd.moves("filter(%63[^)])")) {
-    bool byval = false;
+    bool byval = filter.eat("~val");
 		if(type(T)==type(int)) filter.eat("@key");
-		else if(type(T)==type(xstr)) filter.eat("~key");
-    else if(filter.eat("~val")) byval = true;
-		else throw report("Action::doFilterArr()" E_BADSYNTAX);
-    filter.eat(" ");
-		char op = filter.movechar();
-    if(byval && op!='=') throw report("Action::doFilterArr()" E_BADSYNTAX);
-		if (byval) for(auto const& kv: array.lines) {
-      xstr lhs = -kv.second;
-      xstr rhs = filter.movetext();
-      bool erase = !varOp(lhs,op,rhs);
-      if(erase) array.lines.erase(lhs);
-    }
-    else for(auto const& kv: array.lines) {
-			T lhs = kv.first;
-			bool erase = false;
-			if(type(T)==type(int)) int rhs=filter.movei(), erase = !varOp(lhs,op,rhs);
-			else if(type(T)==type(xstr)) xstr rhs=filter.movetext(), erase = !varOp(lhs,op,rhs);
-      if(erase) array.lines.erase(lhs);
-		}
+		else if(type(T)==type(str)) filter.eat("~key");
+		else if(type(T)==type(VarContainer*)) filter.eat("$key");
+		else if(!byval) throw report("Action::doFilterArr()" E_BADSYNTAX);
+    if(byval) doFilterArrVal(filter,array);
+    else doFilterArrKey(filter,array);
+	}
+  if(type=='s') {
+		T result = doPickOneArr(cmd,array);
+		if(result!=empty<T>()) *getPtr<T>(vi) = result;
+	}
+	else if(type=='f') for(auto const& kv: array.lines) {
+		*getPtr<T>(vi) = kv.first;
+		Mod::executeLine(cmd);
 	}
 }
+
+template<class T>
+void Mod::doFilterArrVal(xstr& filter, Array<T>& array) {
+	char op = filter.movechar();
+  xstr rhs = filter.movetext();
+  for(auto it=array.lines.cbegin(); it!=array.lines.cend() ;) {
+    xstr lhs = -it->second;
+    bool erase = !varOp(lhs,op,rhs);
+		if(erase) it = array.lines.erase(it);
+    else it++;
+	}
+}
+
+template<class T>
+void Mod::doFilterArrKey(xstr& filter, Array<T>& array) {
+  for(auto it=array.lines.cbegin(); it!=array.lines.cend() ;) {
+		T lhs = it->first;
+		if(doFilterArrErase(lhs,filter)) it = array.lines.erase(it);
+    else it++;
+	}
+}
+
 
 template<class T, class U>
 T Mod::doPickAsk(std::map<T,str,U>& src, T def, bool must) {
@@ -129,8 +149,8 @@ T Mod::doPickAsk(std::map<T,str,U>& src, T def, bool must) {
 }
 
 template<class T>
-T Mod::doPickOneArr(xstr& cmd, Array<T>& array, T def) {
-	if(array.lines.size()==0) return def;
+T Mod::doPickOneArr(xstr& cmd, Array<T>& array) {
+	if(array.lines.size()==0) return empty<T>();
   auto fst = array.lines.begin();
 	T result = fst->first;
   if(type(T)==type(int)) {
@@ -144,12 +164,12 @@ T Mod::doPickOneArr(xstr& cmd, Array<T>& array, T def) {
 	if(xstr question=cmd.moves("ask!( \"%[^\"]\" )")) {
 		puts(question);
 		puts("");
-		result = doPickAsk<T>(array.lines,def,true);
+		result = doPickAsk<T>(array.lines,empty<T>(),true);
 	}
 	else if(xstr question=cmd.moves("ask( \"%63[^\"]\" )")) {
 		puts(question);
 		puts("");
-		result = doPickAsk<T>(array.lines,def);
+		result = doPickAsk<T>(array.lines,empty<T>());
 	}
 	else { // pick a random item
 		auto rnd = array.lines.begin();

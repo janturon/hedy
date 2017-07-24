@@ -14,6 +14,9 @@ void VarContainer::parseLine(str& line, char pass) {
   // empty for game, overriden in Item and Node
 }
 
+template<> VarContainer** VarContainer::getPtr<VarContainer*>(VarInfo& vi) { return &(vi.context->objs[vi.name]); }
+template<> int* VarContainer::getPtr<int>(VarInfo& vi) { return &(vi.context->ints[vi.name]); }
+template<> str* VarContainer::getPtr<str>(VarInfo& vi) { return &(vi.context->strs[vi.name]); }
 
 VarContainer* VarContainer::getVC(const char* id) {
 	auto vcit = g->objects.find(id);
@@ -123,7 +126,7 @@ str VarContainer::findStrArr(xstr& line, str& def) {
     return result==src->lines.end() ? def : result->second;
   }
   if(type=='~') {
-    Array<xstr>* src = g->getArray<xstr>(arrid);
+    Array<str>* src = g->getArray<str>(arrid);
     int val = findStr(arrkey);
     auto result = src->lines.find(val);
     return result==src->lines.end() ? def : result->second;
