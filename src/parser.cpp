@@ -1,6 +1,10 @@
 #include "all.h"
 using namespace std;
 
+xstr::xstr() : str() { }
+xstr::xstr(str&& rhs) : str(rhs) { }
+xstr::xstr(const str rhs) : str(rhs) { }
+
 const char* xstr::moveid() {
   int pos1 = 0, pos2 = 0;
   if(!sscanf(cstr+position," %1[a-zA-Z_]%n",str::buffer,&pos1)) return "";

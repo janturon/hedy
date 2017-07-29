@@ -56,7 +56,7 @@ VarInfo VarContainer::getVar(xstr& line) {
 	vi.context = g;
 	if(var[0]=='.') {
     if(id.indexOf(".")>0) {
-      xstr xid = -id;
+      xstr xid = id;
       VarInfo vi2 = getVar(xid);
       vi.context = vi2.context;
     }
@@ -106,7 +106,7 @@ str VarContainer::findStr(const char* cline, str def) {
     else throw report("VarContainer::findStr()" E_MISMATCH D_VAR, cline);
 	}
 	catch(const char*& ex) {
-		if(def!="") return def;
+		if(def!=nos) return def;
 		else throw ex;
 	}
 }
@@ -198,7 +198,7 @@ str VarContainer::srhs(xstr rhs) {
   int index = rand()%numparts;
   xstr result = parts(index);
   replaceVars(result);
-  result.replaceMe("\\n","\n");
+  result.replaceMe("\\n"," \n");
   return result;
 }
 
@@ -239,7 +239,7 @@ void VarContainer::dump() {
   }
   if(strs.size()) {
     printf("--strs: ");
-    for(auto const& item: strs) colprintf("$CYAN %s $LIGHTGRAY %s, ",-item.first,-item.second);
+    for(auto const& item: strs) colprintf("$CYAN %s $LIGHTGRAY %.32s, ",-item.first,-item.second.replace("\n"," "));
     puts("");
   }
   if(objs.size()) {

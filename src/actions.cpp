@@ -250,7 +250,11 @@ void Mod::dumpMore() {
 }
 
 template<class T> bool Mod::doPickAskSkip(T) { return false; }
-template<> bool Mod::doPickAskSkip(Action* action) { return action->findInt(".@hide",0)==1; }
+template<> bool Mod::doPickAskSkip(Action* action) {
+  if(action->findInt(".@hide")==1) return true;
+  if(str cond=action->findStr(".~cond","")) return !evalCondOr(cond);
+  return false;
+}
 
 void Mod::doLoop(xstr& cmd, char type) {
 	select.clear();
@@ -356,13 +360,12 @@ VarContainer* Mod::doPickOne(xstr& cmd, VarInfo& vi) {
 		puts("");
 		wprint(brackets);
 		puts("\n");
-    bool must = fn=='!';
-		VarContainer* result = doPickAsk<VarContainer*,VCLess<VarContainer> >(select,none,must);
-		return result;
+    bool mustAns = fn=='!';
+		return doPickAsk<VarContainer*,VCLess<VarContainer> >(select,none,mustAns);
 	}
 	else { // pick a random item
 		auto rnd = select.begin();
-    int index = rand()%select.size();
+    int index = rand() % select.size();
 		advance(rnd,index);
 		return rnd->first;
 	}
@@ -403,6 +406,7 @@ Action* Action::parseSingleLine(Game* g, xstr& line, char pass) {
     Action* action = new Action(g,id);
     if(str text = line.movetext()) action->strs["text"] = text;
 		else action->strs["text"] = id;
+    if(str cond=line.eat("if ")) action->strs["cond"] = ~line;
     g->addAction(action);
     return action;
   }

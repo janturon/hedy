@@ -10,6 +10,7 @@
 void wprint(const char* str) {
 	int pos = 0;
 	bool col = false;
+  bool apos = false, printapos = false;
 	do {
 		const char* p = str;
 		if(*p=='[') {
@@ -31,7 +32,7 @@ void wprint(const char* str) {
 			continue;
 		}
 		int wlen = 0; // word length in characters
-		while(*p!=0 && *p!=' ' && *p!='\n' && *p!='[' && *p!=']') p=u8shiftcc(p,1), wlen++;
+		while(*p!=0 && *p!=' ' && *p!='\n' && *p!='[' && *p!=']' && *p!='\'') p=u8shiftcc(p,1), wlen++;
 		int blen = p - str; // word length in bytes
     if(pos+wlen>=CONSOLE_WIDTH) { // word overflow, start new line
 			printf("\n");
@@ -42,6 +43,8 @@ void wprint(const char* str) {
 		if(pos==CONSOLE_WIDTH-1 && *p!=0) putchar(' '), ++p, pos=0; // skip space and newline at the end of line
 		else if(*p==' ') putchar(*p++), pos++;
 		else if((*p==']' || *p=='[') && col==false) putchar(*p++), pos++;
+    else if(*p=='\'' && !apos) textcolor(8), putchar(*p++), pos++, apos=!apos;
+    else if(*p=='\'' && apos) putchar(*p++), pos++, textcolor(7), apos=!apos;
 		else if(*p=='\n') putchar(*p++), pos = 0;
 		str = p;
 	} while(*str);

@@ -54,17 +54,17 @@ int main(int argc, char** argv) {
 }
 
 void move(Game& game, Node* here) {
+  static Action selector(&game,"-");
 	clear();
 	xstr templ = -here->findStr(".~text");
   templ+= game.addtext;
 	templ.replaceMe("''","\"");
 	wprint(here->srhs(templ));
   game.addtext = "";
-  xstr statusbar = -game.findStr("~statusbar");
-  if(statusbar) { puts("\n"); wprint(here->srhs(statusbar)); }
-	puts("\n");
+  str statusbar = game.findStr("~statusbar","");
+  if(statusbar) { puts("\n"); wprint(here->srhs(statusbar)); puts("\n"); }
 	Action* chosen;
-	if(game.actions.size()>1) chosen = Action().doPickAsk<Action*,VCLess<Action> >(game.actions,NULL);
+	if(game.actions.size()>1) chosen = selector.doPickAsk<Action*,VCLess<Action> >(game.actions,game.actions.begin()->first);
 	else chosen = game.actions.begin()->first;
 	if(chosen!=NULL) chosen->run();
 	else game.objs["here"] = here;

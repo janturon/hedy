@@ -65,6 +65,8 @@ void Game::addIfMod(Mod* owner, str& cond) {
   sprintf(str::buffer,"if %s then run %s",-cond,-key);
   xstr ifline = str::buffer;
   owner->parseLine(ifline,2);
+  ifline = "check noif";
+  owner->parseLine(ifline,2);
   auto ikey = make_pair(owner,cond);
   imods[ikey] = key;
 }
@@ -183,8 +185,7 @@ Array<VarContainer*>* Game::getArray<VarContainer*>(str& key) {
 void Game::dump() {
 	if(intro) {
 		colprintf("$WHITE GAME$LIGHTGRAY \n");
-    printf("--intro: %.64s\n",-intro);
-    VarContainer::dump();
+    printf("--intro: %.32s\n",-intro.replace("\n"," "));
 	}
 	if(macros.size()>0) {
 		colprintf("$WHITE MACROS$LIGHTGRAY \n");

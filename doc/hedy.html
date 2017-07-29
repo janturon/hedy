@@ -59,7 +59,8 @@ main { margin: 0 10em 10em 0; }
 </ul>
 <a href="#prikazy">Příkazy</a>
 <ul>
-  <li><a href="vars">?vars</a>
+  <li><a href="#vars">?vars</a>
+  <li><a href="#commands">?commands</a>
   <li><a href="#message">message</a>
   <li><a href="#message1">message!</a>
   <li><a href="#run">run</a>
@@ -78,6 +79,7 @@ main { margin: 0 10em 10em 0; }
 <a href="#dodatky">Dodatky</a>
 <ul>
   <li><a href="#podminky">podmínky</a>
+  <li><a href="#podmineny-mod">podmíněný mod</a>
   <li><a href="#zpracovani">zpracování kódu</a>
   <li><a href="#psanipribehu">psaní příběhu</a>
   <li><a href="#dlouhehry">dlouhé hry</a>
@@ -94,17 +96,16 @@ main { margin: 0 10em 10em 0; }
 <p>Na úvod hry je vhodné dát <b>intro</b>, kde hráči hru představíme.
 <p>Zdrojový kód jednoduché hry by mohl vypadat takto:</p>
 
-<xmp>
-intro "Hra světlo na konci tunelu."
+<code class="pre light"><span class="red">intro</span> <span class="G">"Hra světlo na konci tunelu."</span>
 
-initial node zacatek "Jsi na začátku tunelu. Je tu tma jak v pytli."
-node prostredek "Jsi uprostřed tunelu. Před sebou vidíš světlo na konci tunelu."
-final node konec "Dostal ses na konec tunelu. Jsi mrtvý."
+initial <span class="red">node</span> zacatek <span class="G">"Jsi na začátku tunelu. Je tu tma jak v pytli."</span>
+<span class="red">node</span> prostredek <span class="G">"Jsi uprostřed tunelu. Před sebou vidíš světlo na konci tunelu."</span>
+final <span class="red">node</span> konec <span class="G">"Dostal ses na konec tunelu. Jsi mrtvý."</span>
 
-map
-  zacatek + prostredek "dál do tunelu" "zpátky na začátek"
-  prostredek + konec "na konec tunelu" "raději zpátky"
-</xmp>
+<span class="red">map</span>
+  zacatek + prostredek <span class="G">"dál do tunelu" "zpátky na začátek"</span>
+  prostredek + konec <span class="G">"na konec tunelu" "raději zpátky"</span>
+</code>
 
 <p>Tento kód uložíme v kódování UTF-8 do souboru s příponou <tt>.txg</tt> (TeXt Game). Soubory s touto příponou asociujeme s programem <tt>hedy.exe</tt> a můžeme hrát. Měla by se otevřít konzole, kde hráč v průběhu svého hraní uvidí následující obrazovky:</p>
 
@@ -147,9 +148,9 @@ Normální <span class="D">tmavá</span> <span class="L">světlá</span> <span c
 
 <a name="zapis"><h3>Zápis textu</h3></a>
 <p>Jednořádkový text je možné zapsat do uvozovek, víceřádkový text začíná <tt>>>></tt> a končí řádkou, která nezačíná <tt>></tt>. Dlouhý řádek se v konzoli zalamuje na hranici slov.
-<xmp>
-message "Zpráva na jeden řádek."
-</xmp>
+<code class="light">
+message <span class="G">"Zpráva na jeden řádek."</span>
+</code>
 <code>
 Zpráva na jeden řádek.
 </code>
@@ -166,22 +167,21 @@ Zpráva na<br>dva řádky.
 
 <a name="alternativa"><h3>Alternativa</h3></a>
 <p>Znak alternativy je <kbd>|</kbd>, zobrazí se text náhodně vybraný mezi alternativami:
-<xmp>
-message "Nic se nestalo.|Je nuda.|Pohoda a klídek"
-</xmp>
+<code class="light">
+message <span class="G">"Nic se nestalo.|Je nuda.|Pohoda a klídek."</span>
+</code>
 <xmp>
 message >>>
->Nic se nestalo
->|Je nuda
->|Pohoda a klídek
+>Nic se nestalo.
+>|Je nuda.
+>|Pohoda a klídek.
 </xmp>
 
 <a name="promenne1"><h3>Proměnné</h3></a>
 <p>Proměnné se zapisují do složených závorek.
-<xmp>
-@number:= 42
-message "Odpověď je [L{@number}]."
-</xmp>
+<code class="pre light">@number:= 42
+message <span class="G">"Odpověď je [L{@number}]."</span>
+</code>
 <code>
 Odpověď je <span class="L">42</span>.
 </code>
@@ -195,17 +195,17 @@ Odpověď je <span class="L">42</span>.
 </ul>
 <p>Po znaku typu následuje bez mezery <b>identifikátor</b>: jméno, kterým je proměnná odkazována v kódu. Nesmí obsahovat diakritiku, nesmí začínat na číslo a může obsahovat písmena, čísla a podtržítko.
 <p>Objekt je cokoliv, co může obsahovat proměnné (uzel, předmět, mod, akce nebo pole). Proměnné patřící objektu jsou <i>lokální</i>, přistupujeme k nimi přes tečku, např. <tt>$objekt.@proměnná</tt>. Hodnotu proměnné přiřadíme operátorem <tt>:=</tt>.
-<xmp>
-node m1 "Místnost 1"
-node m2 "Místnost 2"
-@pocetMistnosti:= 2
-m1.@plocha:= 16
-m2.@plocha:= 30
-$m:= m1
-message "Plocha místnosti '{$m.~text}' je [L{$m.@plocha}]."
-$m:= m2
-message "Plocha místnosti '{$m.~text}' je [L{$m.@plocha}]."
-</xmp>
+<code class="pre light"><span class="red">node</span> m1 <span class="G">"Místnost 1"</span>
+<span class="red">node</span> m2 <span class="G">"Místnost 2"</span>
+
+<span class="red">mod</span> init
+  m1.@plocha:= 16
+  m2.@plocha:= 30
+  $m:= m1
+  message <span class="G">"Plocha místnosti '{$m.~text}' je [L{$m.@plocha}]."</span>
+  $m:= m2
+  message <span class="G">"Plocha místnosti '{$m.~text}' je [L{$m.@plocha}]."</span>
+</code>
 <code>
 Plocha místnosti 'Místnost 1' je <span class="L">16</span>.<br>
 Plocha místnosti 'Místnost 2' je <span class="L">30</span>.
@@ -216,7 +216,7 @@ Plocha místnosti 'Místnost 2' je <span class="L">30</span>.
 <ul>
   <li><tt>node</tt> uzel: místo, kde se hráč zastaví, aby provedl nějakou akci
   <li><tt>item</tt> věc: objekt, který vidí hráč
-  <li><tt>action</tt> akce: soubor příkazů (např. <tt>message</tt>) popisující akci
+  <li><tt>action</tt> akce: soubor příkazů (např. <tt>message</tt>) popisujících akci
   <li><tt>mod</tt> soubor příkazů spustitelných z jiných modů nebo akcí
   <li><tt>array</tt> soubor proměnných stejného typu
   <li><tt>null</tt> je speciální objekt, který není žádný z výše uvedených typů, hodí se k inicializaci ukazatelů.
@@ -224,20 +224,18 @@ Plocha místnosti 'Místnost 2' je <span class="L">30</span>.
 
 <a name="uzel"><h3>uzel</h3></a>
 <p>Se skládá z identifikátoru, popisu a případně lokálních proměnných. Každá lokální proměnná se zapisuje na jeden řádek, jejich výčet končí prázdným řádkem nebo jiným objektem.
-<xmp>
-node m1 "Místnost1"
+<code class="pre light"><span class="red">node</span> m1 <span class="G">"Místnost1"</span>
   .@plocha:= 16
-</xmp>
+</code>
 
 <p>Popis se převede na proměnnou <tt>~.text</tt>, výšeuvedený zápis je ekvivalentní s
-<xmp>
-node m1
-  .~text:= "Místnost 1"
+<code class="pre light"><span class="red">node</span> m1
+  .~text:= <span class="G">"Místnost 1"</span>
   .@plocha:= 16
-</xmp>
+</code>
 
 <p>Systémová proměnná <tt>$here</tt> ukazuje na uzel, ve kterém se hráč právě nachází. Změna této proměnné způsobí přesunutí do jiného uzlu.
-<p>Uzly jsou mezi sebou propojeny pomocí mapy.
+<p>Uzly jsou mezi sebou propojeny pomocí <a href="#mapa">mapy</a>.
 <p>Pokud se hráči nabízí uzel v příkazu <tt>select</tt>, je uzel popsán proměnnou <tt>.~label</tt>. Pokud chybí, použije se identifikátor.
 <p>Před klíčovým slovem <tt>node</tt> se může nacházet jeden z následujících modifikátorů:
 <ul>
@@ -249,90 +247,75 @@ node m1
 <a name="vec"><h3>věc</h3></a>
 <p>Věc je až na typ syntakticky stejná jako uzel. Rozdíl je pouze sémantický (významový): hra zahlásí chybu, pokud <tt>$here</tt> neukazuje na uzel nebo pokud mapa propojuje něco jiného než uzly. Teoreticky by bylo možné toto povolit a hráč by mohl "vejít do věci", to vede ale k nepřehlednosti: prakticky je vhodné mezi uzlem a předmětem striktně rozlišovat.
 <p>Proměnnou <tt>.~label</tt> není nutné použít, pokud chybí, použije se <tt>.~text</tt> (pokud chybí i ta, použije se identifikátor).
-<xmp>
-item mec "dlouhý meč"
+<code class="pre light"><span class="red">item</span> mec <span class="G">"dlouhý meč"</span>
   .@utok:= 7
-</xmp>
+</code>
 
 <a name="akce"><h3>akce</h3></a>
 <p>Akce je nabídka činností, které může hráč provést. Akci je možné skrýt nastavením lokální proměnné <tt>.@hide</tt> na 1 (nastavením na 0 se opět zobrazí).
 <p>Pokud žádnou akci nenapíšeme, systém vytvoří výchozí akci pro přesun mezi uzly.
-<xmp>
-action go "Jít"
-  select $here from paths ask("Kam chceš jít?")
-</xmp>
+<code class="pre light"><span class="red">action</span> go <span class="G">"Jít"</span>
+  select $here from paths ask(<span class="G">"Kam chceš jít?"</span>)
+</code>
 
 <p>Pokud napíšeme jinou akci, systém tuto výchozí nedodá a je nutné ji vložit do kódu (se stejným nebo jinými příkazy). Příkazy jsou popsány níže
 
 <a name="mod"><h3>mod</h3></a>
 <p>Mod je soubor příkazů spustitelných z jiných modů nebo akcí spustitelným příkazem <tt>run</tt> (popsáno níže). Proměnná <tt>.~text</tt> je zde obvykle nepotřebná, neboť hráč se s modem přímo nesetká.
-<xmp>
-mod smrt
-  message "Umřel jsi"
+<code class="pre light"><span class="red">mod</span> smrt
+  message <span class="G">"Umřel jsi"</span>
   $here:= gameover
-</xmp>
+</code>
 
 <p>Mod <b>init</b> (pokud je napsán) se spustí automaticky na začátku hry.
 <p>Mod <b>update</b> (pokud je napsán) se spustí automaticky před každým vypsáním uzlu.
 <p>Ukazatel na mod je možné vytvořit pomocí textu:
-<xmp>
-$report:= "Hello"
-</xmp>
-<p>Zde se vytvoří anonymní mod (se jménem <tt>_modX</tt>, kde <tt>X</tt> je číslo rostoucí od 1), který obsahuje jediný příkaz <tt>message</tt>, který obsahuje zadaný text (zde message "Hello").
+<code class="light">$report:= <span class="G">"Hello"</span></code>
+<p>Zde se vytvoří anonymní mod (se jménem <tt>_tmodX</tt>, kde <tt>X</tt> je číslo rostoucí od 1), který obsahuje jediný příkaz <tt>message</tt>, který obsahuje zadaný text (zde message "Hello").
 
 <a name="pole"><h3>pole</h3></a>
 <p>Pole obsahuje pouze proměnné stejného typu. Neobsahuje popis (proměnnou <tt>.~text</tt>) a není možné ho přiřadit proměnné typu <tt>$</tt>. Je možné ho využít pouze v příkazech <tt>select</tt> a <tt>foreach</tt>. Položky pole jsou <b>klíč</b> (libovolného typu) a <b>hodnota</b> (pouze text).
-<xmp>
-array @cisla
-  1 "jedna"
-  10 "deset"
-  100 "sto"
-</xmp>
-<xmp>
-array $smery
-  uzelVlevo "doleva"
-  uzelVpravo "doprava"
-</xmp>
-<xmp>
-array ~preklad
-  "one" "jedna"
-  "two" "dvě"
-  "three" "tři"
-</xmp>
+<code class="pre light">array @cisla
+  1 <span class="G">"jedna"</span>
+  10 <span class="G">"deset"</span>
+  100 <span class="G">"sto"</span>
+</code>
+<code class="pre light">array $smery
+  uzelVlevo <span class="G">"doleva"</span>
+  uzelVpravo <span class="G">"doprava"</span>
+</code>
+<code class="pre light">array ~preklad
+  <span class="G">"one" "jedna"</span>
+  <span class="G">"two" "dvě"</span>
+  <span class="G">"three" "tři"</span>
+</code>
 
 <a name="prikazy"><h2>Příkazy</h2></a>
 <p>Jinde než do akce a do modu nelze příkazy vkládat.
 
 <a name="vars"><h3>?vars</h3></a>
 <p>Vypíše obsah všech proměnných ve hře. Vhodné k ladění.
-<xmp>
-message "Najednou se propadla podlaha!"
-</xmp>
+
+<a name="commands"><h3>?commands</h3></a>
+<p>Vypíše příkazy všech modů a akcí ve hře. Vhodné k ladění.
 
 <a name="message"><h3>message</h3></a>
 <p>Vloží text a čeká na stisk klávesy.
-<xmp>
-message "Najednou se propadla podlaha!"
-</xmp>
+<code class="light">message <span class="G">"Najednou se propadla podlaha!"</span></code>
 
 <a name="message1"><h3>message!</h3></a>
 <p>Totéž, co message, ale před výpisem vymaže obrazovku
-<xmp>
-message! "Najednou se propadla podlaha!"
-</xmp>
+<code class="light">message! <span class="G">"Najednou se propadla podlaha!"</span></code>
 
 <a name="text"><h3>text</h3></a>
-<xmp>
-  foreach $item from items filter($place=$here) text "{$item.~see}"
-</xmp>
+<code class="light">foreach $item from items filter($place=$here) text <span class="G">"{$item.~see}"</span></code>
 <p>Připojí text k popisu uzlu. Vhodné do modu update. V příkladě se k popisu uzlu přidají obsahu lokálních proměnných <tt>.~see</tt> všech předmětů, které se zde nachází.
 
 <a name="run"><h3>run</h3></a>
 <p>Spustí jiný mod:
-<xmp>
-action paka "Zatáhnout za páku"
+<code class="pre light">action paka <span class="G">"Zatáhnout za páku"</span>
   run smrt
-</xmp>
+</code>
 
 <a name="if"><h3>if - then</h3></a>
 <xmp>
@@ -366,12 +349,11 @@ luck ŠANCE:Z
 
 <p>PROCENT je pravá strana číselných operací (viz výše pro znak <kbd>@</kbd>), musí následovat znak <tt>%</tt>. Podmínka je splněna s uvedenou pravděpodobností
 <p>ŠANCE a Z jsou také pravé strany číselných operací. Podmínka je splněna s pravděpodobností ŠANCE / Z. Příklady použití:
-<xmp>
-if luck 50% then message "Šance 50%"
-if not luck 3:4 then message "Šance 1:4"
+<code class="pre light">if luck 50% then message <span class="G">"Šance 50%"</span>
+if not luck 3:4 then message <span class="G">"Šance 1:4"</span>
 if luck @zaklad + @bonus % then run uspech
 if not luck @zaklad + @bonus : $hrac.@max and $hrac.$zbran=item then run zasah
-</xmp>
+</code>
 
 <a name="check"><h3>check</h3></a>
 <xmp>
@@ -379,9 +361,7 @@ check PODMÍNKA
 </xmp>
 <p>Podmínka je popsána výše. Pokud není splněna mod nebo akce nevykoná příkazy, které následují po tomto příkazu.
 <p>Navíc je možné testovat nesplnění předchozích <tt>if</tt>:
-<xmp>
-check noif
-</xmp>
+<code class="light">check noif</code>
 <p>Příklad vykoná následující příkazy, pokud před ním nebyla splněna žádná podmínka <tt>if</tt>.
 
 <a name="select"><h3>select</h3></a>
@@ -417,44 +397,39 @@ filter(L operace R)
 </ul>
 
 <p>Například můžeme hráči umožnit vybrat si zbraň (volbu uložíme do proměnné <tt>$zbran</tt>):
-<xmp>
+<code class="light">
 select $zbran from items filter(~typ="zbraň") ask("Vyber si zbraň")
-</xmp>
+</code>
 
 <p>Zkrácenější zápis je umožněn <b>makrem</b>, které nahradí část příkazu jedním slovem se syntaxí
-<xmp>
-macro SLOVO NÁHRADA
-</xmp>
+<code class="light">macro SLOVO NÁHRADA</code>
 
 <p>Například:
-<xmp>
-macro zbrane items filter(~typ="zbraň")
+<code class="pre light">macro zbrane items filter(~typ="zbraň")
 
 action vyberZbrane "Vyber si zbraň"
   select $zbran from zbrane ask("Kterou?")
-</xmp>
+</code>
 
 <p>Podobného efektu (ale s vlastním popisem) dosáhneme použitím pole:
-<xmp>
-array $mojeZbrane
+<code class="pre light">array $mojeZbrane
   dyka "krátký nůž"
   mec "dlouhý nůž"
   dlouhyMec "ještě delší nůž"
   savle "křivý nůž"
 
 select $zbran from $mojeZbrane ask("Vyber si zbraň")
-</xmp>
+</code>
 
 <p>Z pole můžeme vybrat i čísla nebo text:
-<xmp>
-array @dysko
+<code class="pre light">array @dysko
   0 "nic"
   5 "minimum"
   15 "běžné"
   50 "velké"
 
 select @penize from @dysko ask("Jaké dáš čišníkovi dýško?")
-</xmp>
+</code>
 
 <a name="foreach"><h3>foreach</h3></a>
 <p>Má podobnou syntaxi jako <tt>select</tt>:
@@ -547,7 +522,8 @@ map
   jinozem + cil "k fontáně" "k bráně"
   jinozem > brana "do našeho světa"
 </xmp>
-
+<p>
+<b>propojení scén:</b> <img src="sceny.png">
 <p>Oba soubory jsou mezi sebou vzájemně propojeny syntaxí
 <xmp>
 extern node UZEL from "SOUBOR"
@@ -578,18 +554,16 @@ map
 
 <a name="dodatky"><h2>Dodatky</h2></a>
 <a name="podminky"><h3>Podmínky</h3></a>
-<p><tt>and</tt> má vyšší prioritu než <tt>or</tt> (jakoby části s <tt>and</tt> byly uzávorkované). Hedy ale nepodporuje závorky v podmínkách: pokud v podmínce závorky potřebujete, podmínka je nepřehledná a je vhodnější ji rozdělit do více částí: <tt>A and (B or C)</tt> je možné zapsat přehledněji takto:
+<p><tt>and</tt> má vyšší prioritu než <tt>or</tt> (jakoby části s <tt>and</tt> byly uzávorkované). Hedy ale nepodporuje závorky v podmínkách: pokud v podmínce závorky potřebujete, podmínka je nepřehledná a je vhodnější ji rozdělit do více částí: <tt>A and (B or C)</tt> v Hedy není možné zapsat jako:
 <xmp>
-  @maSilu:= 0
-  if A then @maSilu:= 1
-
-  @jePovoleno:= 0
-  if B or C then @jePovoleno:= 1
-
-  if @maSilu=1 and @jePovoleno=1 then ...
+if @jeZivy=1 and (@maZbran=1 or @maKouzlo=1) then ...
 </xmp>
-<p>Kód je sice delší, ale je možné pochopit ho rychleji než jednořádkový <tt>A and (B or C)</tt>, kde stejně musíme v kódu hledat, jaký význam mají části A, B a C. V delším zápisu je jejich význam vysvětlen identifikátory <tt>@maSilu</tt> a <tt>@jePovoleno</tt> a poslední řádek je tak okamžitě srozumitelný bez nutnosti zkoumat okolní kód.</p>
-<p><small>Je dobré si tuto praxi osvojit i v jazycích, které uzávorkování podporují. Teoretikové často tvrdí, že podobný kód je pomalejší. Není to pravda: moderní jazyky provádějí optimalizaci a k pomocným proměnným téměř jistě použijí registry. Chtějte důkaz tvrzení (<i>proof of concept</i>), ať vám oponent předloží výsledky svých měření a ukáže reálnou situaci, kde to způsobí problém. Teprve poté zvažte, jestli taková situace může nastat ve vašem případě.</small></p>
+<p>Bez závorek je možné ale zapsat ekvivalentní
+<xmp>
+@muzeUtocit:= 0
+if @maZbran or @maKouzlo then @muzeUtocit:=1
+if @jeZivy=1 and @muzeUtocit=1 then ...
+</xmp>
 
 <a name="zpracovani"><h3>Zpracování kódu</h3></a>
 <p>Kód je ryze interpretovaný. Zpracování probíhá řádek po řádku ve dvou fázích:
@@ -628,6 +602,43 @@ item klic "Klíč"
 item pacidlo "Páčidlo"
   .$otevri:= pacidloOtevri
 </xmp>
+
+<a name="podmineny-mod"><h3>Podmíněný mod</h3></a>
+<p>Podmíněný mod je varianta modu, který se vykoná za určité <a href="#if">podmínky</a>. Pokud je podmínka splněna, nevykonávají se další varianty modu. Varianty se testují v pořadí, v jakém byly zadány v kódu. Případný mod bez varianty je zařazen nakonec.
+<xmp>
+mod pozdrav
+  message "Pozdravil jsi krásný den."
+
+mod pozdrav if $here=brana
+  message "Pozdravil jsi vrátného."
+</xmp>
+<p>Výšeuvedený příklad při použití modu pozdrav použije variantu, pokud hráč stojí u brány; všude jinde se použije mod bez varianty. Použijeme-li příkaz <a href="#commands"><tt>?commands</tt></a>, uvidíme, že kód se přeloží, jako bychom zapsali méně přehledným způsobem:
+<xmp>
+mod _imod1
+  message "Pozdravil jsi vrátného."
+
+mod pozdrav
+  if $here=brana then run _imod1
+  check noif
+  message "Pozdravil jsi krásný den."
+</xmp>
+
+<a name="neprimy-odkaz"><h3>Nepřímý odkaz</h3></a>
+<p>Téhož efektu, jako u podmíněných modů, je možné docílit pomocí nepřímých odkazů:
+<xmp>
+item pozdrav
+  .$use:= from $here.$zdravim default "Pozdravil jsi krásný den."
+
+node brana
+  .$zdravim:= "Pozdravil jsi vrátného."
+
+action a1 "Pozdravit"
+  run item.$use
+</xmp>
+
+<p>Podmíněný mod použijeme, když potřebujeme, aby akce či mod za určitých okolností (při určitém stavu proměnných) udělal něco jiného než obvykle.
+<p>Nepřímý odkaz použijeme, když potřebujeme manipulovat s věcí (použít, přečíst, začarovat...) na mnoha různých místech a na každém z nich má akce jiný efekt.
+<p>Bez těchto obratů je možné se obejít a zapsat totéž výšeuvedeným opisem. U rozsáhlých her je však třeba dodržovat určitá pravidla známá z objektového programování, a tyto obraty je umožňují dodržet. Bez těchto rozšíření není prakticky možné psát dlouhé hry.
 
 <a name="psanipribehu"><h3>Psaní příběhu</h3></a>
 <p>Počítačové hry jsou obvykle založené na audiovizuálních efektech: vnímání herní scény a reakce na ni. Zde máme k dispozici pouze text s občasným zvýrazněním, který oslovuje především čtenáře knih. Ty vtáhne do děje dobrý příběh a hlavním aktérem je jejich fantazie. Je to podobný rozdíl, jako mezi knihou a filmem: film běží v čase a divák se nechá unášet. Kniha má mnohem více prostoru na popisy detailů a skrytých věcí: když je někde nahuštěný děj, čtenář může zvolnit nebo zastavit a uvědomit si prožitek, než pokračuje dál.

@@ -88,8 +88,8 @@ public:
   int indexOf(const char* str, int from=0) const;
   int lastIndexOf(char c, int from=0) const;
   int lastIndexOf(const char* str, int from=0) const;
-  int count(char search);
-	int count(const char* search);
+  int count(char search) const;
+	int count(const char* search) const;
   bool startsWith(const char* test, int pos=0);
   bool startsWith(std::vector<const char*> test, int pos=0);
   bool endsWith(const char* test, int pos=0);
@@ -106,7 +106,7 @@ public:
 	str explode(const char* separator=" ", size_t max=0, bool skipempty=true);
 	str& implodeMe(const char* glue="");
 	str implode(const char* glue="");
-	str replace(const char* from, const char* to, size_t limit=0);
+	str replace(const char* from, const char* to, size_t limit=0) const;
 	str& replaceMe(const char* from, const char* to, size_t limit=0);
 };
 

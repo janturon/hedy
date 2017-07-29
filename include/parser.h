@@ -30,6 +30,9 @@
 class xstr : public str {
 public:
   using str::str;
+  xstr();
+  xstr(str&& rhs);
+  xstr(const str rhs);
   const char* moveid();
   const char* movevar();
   const char* movetext();

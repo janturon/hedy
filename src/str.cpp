@@ -358,12 +358,12 @@ int str::lastIndexOf(const char* str, int from) const {
   for(int i=from; i-->0;) if(strncmp(cstr+i,str,len)==0) return i;
   return -1;
 }
-int str::count(char search) {
+int str::count(char search) const {
   int result = 0;
   for(const char* i=cstr; *i!=0; ++i) if(*i==search) ++result;
   return result;
 }
-int str::count(const char* search) {
+int str::count(const char* search) const {
   int result = 0;
   for(const char* i=cstr; i=strstr(i,search); ++i) ++result;
   return result;
@@ -496,17 +496,18 @@ str str::implode(const char* glue) {
   return static_cast<str&&>(result);
 }
 
-str str::replace(const char* from, const char* to, size_t limit) {
+str str::replace(const char* from, const char* to, size_t limit) const {
   size_t cnt = limit==0 ? count(from) : limit;
+  if(cnt==0) return *this;
   size_t fromlen = strlen(from);
 	if(fromlen==0) return *this;
   size_t tolen = strlen(to);
   if(limit==0) limit = 65535;
   str result("",length+cnt*(tolen-fromlen));
-  const char *prev = "", *next = cstr;
+  const char *prev = cstr, *next = cstr;
   do {
     next = strstr(next,from);
-    result.append(prev,next-prev);
+    if(next>prev) result.append(prev,next-prev);
     if(!next) break;
     result.append(to,tolen);
     next+= fromlen;
