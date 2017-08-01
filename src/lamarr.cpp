@@ -14,6 +14,7 @@ int main(int argc, char** argv) {
   if(argc<2) error(E_GAMEMISSING),exit(1);
   Game game;
   Parser(argv[1],&game).parse();
+  game.loaded = true;
 //	game.dump(); getchar(); return 0;
 
 	// show intro
@@ -56,8 +57,11 @@ int main(int argc, char** argv) {
 void move(Game& game, Node* here) {
   static Action selector(&game,"-");
 	clear();
-	xstr templ = -here->findStr(".~text");
-  templ+= game.addtext;
+	xstr templ = -here->findStr(".~text","");
+  if(game.addtext) {
+    templ+= " ";
+    templ+= game.addtext;
+  }
 	templ.replaceMe("''","\"");
 	wprint(here->srhs(templ));
   game.addtext = "";

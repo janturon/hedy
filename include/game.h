@@ -15,6 +15,7 @@ struct Game : VarContainer {
   str intro;
   xstr addtext;
   int modcnt; // counter for text mods id
+  bool loaded;
 
   Game();
   Item* getItem(str key);

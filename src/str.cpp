@@ -243,7 +243,7 @@ const char* str::trim() {
   int lshift = 0, rshift = 0;
   char* p = cstr;
   while(isspace9(*p)) ++lshift,++p;
-  while(isspace9(*p)) p++;
+  while(*p) ++p;
   p-= 1;
   while(isspace9(*p)) ++rshift,--p;
   int resultlen = length-lshift-rshift;
@@ -417,6 +417,13 @@ void str::reset() {
 
 // secondary methods
 const char* str::moves(const char* pattern) {
+/*
+  str::buffer[0] = 0;
+  while(cstr[position]==' ') _position++;
+  sscanf(cstr+position, pattern, str::buffer);
+  markShift(strlen(str::buffer));
+  return str::buffer;
+*/
   str::buffer[254] = 0;
   snprintf(str::buffer,256," %s%%n",pattern);
   if(str::buffer[254]!=0) throw "str::moves buffer overflow";

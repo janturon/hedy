@@ -12,6 +12,7 @@ Game::Game() : VarContainer(this,"game") {
   intro = "";
   addtext = "";
   modcnt = 0;
+  loaded = false;
 }
 
 Item* Game::getItem(str key) {

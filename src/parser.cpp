@@ -3,7 +3,7 @@ using namespace std;
 
 xstr::xstr() : str() { }
 xstr::xstr(str&& rhs) : str(rhs) { }
-xstr::xstr(const str rhs) : str(rhs) { }
+xstr::xstr(str rhs) : str(rhs) { }
 
 const char* xstr::moveid() {
   int pos1 = 0, pos2 = 0;
@@ -22,7 +22,10 @@ const char* xstr::movevar() {
 }
 
 const char* xstr::movetext() {
-  return moves("\"%8191[^\"]\"");
+  int pos = 0;
+  if(!sscanf(cstr+position," \"%8191[^\"]\"%n",str::buffer,&pos)) return "";
+  markShift(pos);
+  return str::buffer;
 }
 
 char xstr::movechar() {

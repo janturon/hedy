@@ -1,0 +1,20 @@
+mod pozdrav
+  message "Pozdravil jsi krásný den."
+
+mod pozdrav if $here=brana
+  message "Pozdravil jsi vrátného."
+
+action a1pozdrav "Pozdravit"
+  run pozdrav
+
+action a2go "Jít"
+  select $here from paths ask("Kam chceš jít?")
+
+action a3dump "Výpis"
+  ?commands
+
+initial node start "Stojíš na cestě k bráně."
+node brana "Jsi u brány. Hlídá ji vrátný."
+
+map
+  start + brana "k bráně" "na cestu"

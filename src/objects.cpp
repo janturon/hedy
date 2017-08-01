@@ -39,7 +39,7 @@ Node* Node::parseSingleLine(Game* g, xstr& line, char pass) {
     if(attr=='f') node->ints["final"] = 1;
     else if(attr=='i') g->objs["here"] = node;
     if(attr!='e') {
-      if(str text = line.movetext()) node->strs["text"] = text;
+      if(str text = line.movetext()) node->strs["text"] = text.trim();
       g->addNode(node);
   	  return node;
     }
@@ -107,6 +107,7 @@ Item* Item::parseSingleLine(Game* g, xstr& line, char pass) {
   if(pass==1) {
     Item* item = new Item(g,id);
     if(str text = line.movetext()) item->strs["text"] = text;
+    if(line.eat("at ")) if(str at=line.movevar()) item->objs["place"] = g->getVC(at);
     g->addItem(item);
     return item;
   }
@@ -163,7 +164,7 @@ template<>
 void Array<VarContainer*>::parseLine(xstr& line, char pass) {
 	if(pass==2) {
 		str skey = line.movevar();
-    VarContainer* key = g->getVC(-skey);
+    VarContainer* key = g->getVC(skey);
 		str val = line.movetext();
 		lines.insert(make_pair(key,val));
 	}

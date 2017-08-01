@@ -32,7 +32,7 @@ public:
   using str::str;
   xstr();
   xstr(str&& rhs);
-  xstr(const str rhs);
+  xstr(str rhs);
   const char* moveid();
   const char* movevar();
   const char* movetext();

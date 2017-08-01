@@ -45,18 +45,14 @@ int VarContainer::getInt(const char* id, VarContainer* context) {
   if(intit!=context->ints.end()) return intit->second;
   return nan;
 }
-// mynode, myitem, mymod
-// mynode.@myint, mynode.~mystr, mynode.$myobj
-// @myint, ~mystr, $myobj
-// @.myint, ~.mystr, $.myobj
-// $myobj.@myint, $myobj.~mystr, $myobj.$otherobj
+
 VarInfo VarContainer::getVar(xstr& line) {
 	VarInfo vi;
 	xstr var = line.movevar();
 	vi.context = g;
 	if(var[0]=='.') {
     if(id.indexOf(".")>0) {
-      xstr xid = id;
+      xstr xid = -id;
       VarInfo vi2 = getVar(xid);
       vi.context = vi2.context;
     }
@@ -159,7 +155,12 @@ void VarContainer::parseVar(str& line, char pass) {
     if(L.type=='@') L.context->ints[L.name] = irhs(rhs);
     else if(L.type=='~') L.context->strs[L.name] = findStr(rhs);
     else if(L.type=='$') {
+      rhs.eat(" ");
       if(xstr rhstext=rhs.movetext()) L.context->objs[L.name] = g->textMod(rhstext);
+      else if(rhs[0]=='~') {
+        xstr rhx = -findStr(rhs,"");
+        L.context->objs[L.name] = g->textMod(rhx);
+      }
       else if(rhs.eat("from ")) L.context->objs[L.name] = g->fromMod(rhs);
       else L.context->objs[L.name] = findObj(rhs);
     }

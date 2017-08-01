@@ -229,14 +229,14 @@ void Mod::message(xstr& cmd, bool strict) {
 	xstr msg = cmd.movetext();
 	if(strict) clear(); else puts("");
   wprint(srhs(msg));
-  if(strict) colprintf("\n\n$GREEN %s $LIGHTGRAY", G_WAIT);
+  colprintf("\n\n$GREEN %s $LIGHTGRAY", G_WAIT);
 	getkey();
   puts("");
 }
 
 void Mod::text(xstr& cmd) {
-  sprintf(str::buffer,"%s %s",-g->addtext,-srhs(cmd));
-  g->addtext = str::buffer;
+  str rhs = srhs(cmd);
+  if(rhs) g->addtext+= srhs(cmd);
 }
 
 void Mod::dump() {
