@@ -3,7 +3,20 @@
 
 #include "all.h"
 
+class Saver {
+  Game* g;
+  void addStr(char*& to, const char* from, int len);
+public:
+  Saver(Game* g);
+  static char buffer[8192];
+  std::map<str,char> cmds;
+  std::map<str,str> vars;
+  void save();
+  void load();
+};
+
 struct Game : VarContainer {
+  Saver saver;
 	Path* path;
 	std::map<Action*,str,VCLess<Action> > actions;
   std::map<str,VarContainer*> objects;
@@ -15,7 +28,7 @@ struct Game : VarContainer {
   str intro;
   xstr addtext;
   int modcnt; // counter for text mods id
-  bool loaded;
+  bool loading;
 
   Game();
   Item* getItem(str key);

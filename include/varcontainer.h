@@ -22,6 +22,8 @@ class VarContainer {
 
 protected:
   Game* g;
+  xstr lhs;
+  xstr rhs;
 
 public:
 	// get value from context (in getVar)

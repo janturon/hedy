@@ -107,12 +107,14 @@ Item* Item::parseSingleLine(Game* g, xstr& line, char pass) {
   if(pass==1) {
     Item* item = new Item(g,id);
     if(str text = line.movetext()) item->strs["text"] = text;
-    if(line.eat("at ")) if(str at=line.movevar()) item->objs["place"] = g->getVC(at);
     g->addItem(item);
     return item;
   }
-  else {
-    return g->getItem(id);
+  else if(pass==2) {
+    Item* item = g->getItem(id);
+    line.movetext();
+    if(line.eat("at ")) if(str at=line.movevar()) item->objs["place"] = g->getVC(at);
+    return item;
   }
 }
 

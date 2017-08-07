@@ -10,6 +10,22 @@ Mod::Mod(Game* g, const str _id)
   ifcontext = NULL;
 }
 
+void Mod::parseVar(str& line, char pass) {
+  VarContainer::parseVar(line,pass);
+  if(pass==2) {
+    lhs.markTo(0);
+    VarInfo L = getVar(lhs);
+    if(line.cstr[0]=='.') lhs-= L.context->id;
+    g->saver.vars[lhs] = rhs;
+  }
+}
+
+void Mod::saveArray(xstr& s, char op) {
+  auto p = g->saver.cmds.find(-s);
+  if(p==g->saver.cmds.end()) g->saver.cmds.insert(make_pair(s,op));
+  else p->second = op;
+}
+
 Mod* Mod::parseSingleLine(Game* g, xstr& line, char pass) {
   line.eat("mod ");
   xstr id = line.movevar();
@@ -43,6 +59,12 @@ void Mod::parseLine(xstr& line, char pass) {
 		}
 		lines.push_back(line);
 	}
+}
+
+void Mod::doPickFn(int code) {
+  switch(code) {
+    case 33: g->saver.save(); return;
+  }
 }
 
 bool Mod::evalIf(str& s) {
@@ -202,7 +224,7 @@ void Mod::executeLine(xstr& line) {
 	else if(cmd.eat("set $")) array<VarContainer*>(cmd);
   else if(cmd.indexOf(":=")>-1) parseVar(cmd,2);
 	else if(cmd.eat("?")) showdump(cmd);
-	else if(cmd.eat("path ")) g->path->parseLine(cmd,2);
+	else if(cmd.eat("path ")) path(cmd);
 	else if(cmd.eat("select ")) doLoop(cmd,'s');
 	else if(cmd.eat("foreach ")) doLoop(cmd,'f');
 	else if(cmd.eat("run ")) {
@@ -223,6 +245,17 @@ void Mod::showdump(xstr& line) {
 	if(line.eat("vars")) g->dump();
 	if(line.eat("commands")) g->dumpMore();
   clear();
+}
+
+void Mod::path(xstr& line) {
+  g->path->parseLine(line,2);
+  line.markTo(0);
+  line.moveid();
+  line.eat(" ");
+	char op = line.movechar();
+  auto p = g->saver.cmds.find(-line);
+  if(p==g->saver.cmds.end()) g->saver.cmds.insert(make_pair(-line,op));
+  else p->second = op;
 }
 
 void Mod::message(xstr& cmd, bool strict) {

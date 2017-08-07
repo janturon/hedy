@@ -105,7 +105,8 @@ int getkey() {
   do ReadConsoleInputW(conin,&ir,1,&cnt); while(ir.EventType!=KEY_EVENT);
   FlushConsoleInputBuffer(conin);
   KEY_EVENT_RECORD ke = ir.Event.KeyEvent;
-  return ke.uChar.UnicodeChar;
+  int result = ke.uChar.UnicodeChar;
+  if(result==0) return 1000000+ke.wVirtualKeyCode;
 }
 
 int getchs(const char* select) {

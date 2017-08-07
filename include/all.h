@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <vector>
 #include <map>
 #include "u8char.h"
 #include "str.h"

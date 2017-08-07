@@ -1,10 +1,58 @@
 #include "all.h"
+#include <string.h>
 using namespace std;
+
+/*
+  Saver
+*/
+Saver::Saver(Game* g) : g(g) { }
+
+char Saver::buffer[8192];
+
+void Saver::addStr(char*& to, const char* from, int len) {
+  strncpy(to,from,len);
+  to+= len;
+}
+
+void Saver::save() {
+  char* p = buffer;
+  for(auto const& kv: vars) {
+    addStr(p,kv.first,kv.first.length);
+    addStr(p,":=",2);
+    xstr key = -kv.first;
+    VarInfo L = g->getVar(key);
+    str R;
+    if(L.type=='@') R = g->getInt(L.name,L.context);
+    else if(L.type=='~') R = g->findStr(kv.second), R-="\"", R+="\"";
+    else if(L.type=='$') R = kv.second;
+    addStr(p,R,R.length);
+    addStr(p,"\n",1);
+  }
+  addStr(p,"$here:=",7);
+  VarContainer* here = g->objs["here"];
+  addStr(p,here->id,here->id.length);
+  addStr(p,"\n",1);
+  addStr(p,"\nmod _load\n",11);
+  for(auto const& kv: cmds) {
+    addStr(p,kv.first,kv.first.length);
+    addStr(p,"\n",1);
+  }
+  FILE* fd = fopen("save.txgs","w");
+  fputs(buffer,fd);
+  fclose(fd);
+}
+
+void Saver::load() {
+  try {
+    Parser("save.txgs",g).parse();
+  }
+  catch(...) {}
+}
 
 /*
   Game
 */
-Game::Game() : VarContainer(this,"game") {
+Game::Game() : VarContainer(this,"game"), saver(this) {
 	none = new VarContainer(this,"null");
   objects.insert(make_pair("null",none));
   strs.insert(make_pair("statusbar",""));
@@ -12,7 +60,7 @@ Game::Game() : VarContainer(this,"game") {
   intro = "";
   addtext = "";
   modcnt = 0;
-  loaded = false;
+  loading = false;
 }
 
 Item* Game::getItem(str key) {

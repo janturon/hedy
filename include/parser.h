@@ -12,6 +12,7 @@
 #define E_MISMATCH " Nekompatibilita: "
 #define E_BADSYNTAX " Syntaktická chyba: "
 #define E_REPEATED " Opakovaná definice: "
+#define E_QUOTE " Chybí ukončovací uvozovka."
 
 #define D_VAR "proměnná '%s'"
 #define D_NODE "uzel '%s'"

@@ -20,6 +20,7 @@ protected:
 	template<class T> T getKey(xstr& cmd);
 	template<class T> Array<T>* getArray(str& arr);
 	template<class T> void array(xstr& s);
+  void saveArray(xstr& s, char op);
 
 	// conditions
 	bool evalIf(str& s);
@@ -35,6 +36,7 @@ protected:
   void message(xstr& cmd, bool strict=false);
   void text(xstr& cmd);
 	void showdump(xstr& line);
+	void path(xstr& line);
 
 	// select, foreach
   std::map<VarContainer*,str, VCLess<VarContainer> > select;
@@ -52,9 +54,11 @@ protected:
   template<class T> bool doFilterArrErase(T& lhs, xstr filter);
   template<class T> T doPickOneArr(xstr& cmd, Array<T>& array);
 	template<class T> bool doPickAskSkip(T);
+  void doPickFn(int code);
 
 public:
   Mod(Game* g, const str _id);
+  void parseVar(str& line, char pass);
   static Mod* parseSingleLine(Game* g, xstr& line, char pass);
   void parseLine(xstr& line, char pass);
 	template<class T, class U=std::less<T> >
@@ -70,6 +74,7 @@ void Mod::array(xstr& cmd) {
 	cmd.eat(" ");
 	char op = cmd.movechar();
 	if(op!='+' && op!='-') throw report("Mod::arraySingleLine()" E_BADSYNTAX);
+  saveArray(cmd,op);
 	T key = getKey<T>(cmd);
 	str val = cmd.movetext();
 	Array<T>* a = getArray<T>(arr);
@@ -141,8 +146,10 @@ T Mod::doPickAsk(std::map<T,str,U>& src, T def, bool must) {
 	letters[i] = 0;
   int letter;
 	do {
-		letter = getkey()+'A'-'a';
-		for(const char* c=letters; *c!=0; ++c) if(*c==letter) goto CHOSEN;
+    int code = getkey();
+		letter = code+'A'-'a';
+    if(code>1000000) doPickFn(code-1000000);
+		else for(const char* c=letters; *c!=0; ++c) if(*c==letter) goto CHOSEN;
 	} while(1);
 	CHOSEN:
 	return keys[letter];

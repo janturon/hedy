@@ -22,8 +22,10 @@ const char* xstr::movevar() {
 }
 
 const char* xstr::movetext() {
-  int pos = 0;
-  if(!sscanf(cstr+position," \"%8191[^\"]\"%n",str::buffer,&pos)) return "";
+  int found = 0, pos = 0;
+  str::buffer[0] = 0;
+  if(!sscanf(cstr+position," \"%n%8191[^\"]\"%n",&found,str::buffer,&pos)) return "";
+  if(found && !pos) throw report(E_BADSYNTAX E_QUOTE);
   markShift(pos);
   return str::buffer;
 }
@@ -70,9 +72,7 @@ Parser::Parser(const char* file, Game* game) : line("",8192) {
     Parser::loaded.push_back(-line);
     fd = fopen(line,"r");
     if(fd==NULL) {
-      error(E_GAMENOTFOUND,file);
-      getchar();
-      exit(1);
+      throw report(E_GAMENOTFOUND,file);
     }
     lineNumber = 0;
     g = game;

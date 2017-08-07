@@ -13,9 +13,23 @@ int main(int argc, char** argv) {
 	// load game
   if(argc<2) error(E_GAMEMISSING),exit(1);
   Game game;
-  Parser(argv[1],&game).parse();
-  game.loaded = true;
+  try {
+    Parser(argv[1],&game).parse();
+    game.loading = true;
+    game.saver.load();
+    game.loading = false;
+  }
+  catch(const char*& ex) {
+	  error("%s\n",ex);
+    getchar();
+    return 0;
+	}
+
 //	game.dump(); getchar(); return 0;
+
+	// run init and load
+	try { game.getMod("init")->run(); } catch(...) {}
+	try { game.getMod("__load")->run(); } catch(...) {}
 
 	// show intro
 	if(game.intro) try {
@@ -28,9 +42,6 @@ int main(int argc, char** argv) {
 	catch(const char*& ex) {
 	  error("%s\n",ex);
 	}
-
-	// run init
-	try { game.getMod("init")->run(); } catch(...) {}
 
 	try {
     Node* nodeHere;
@@ -57,6 +68,7 @@ int main(int argc, char** argv) {
 void move(Game& game, Node* here) {
   static Action selector(&game,"-");
 	clear();
+	try { game.getMod("before")->run(); } catch(...) {}
 	xstr templ = -here->findStr(".~text","");
   if(game.addtext) {
     templ+= " ";
@@ -67,6 +79,7 @@ void move(Game& game, Node* here) {
   game.addtext = "";
   str statusbar = game.findStr("~statusbar","");
   if(statusbar) { puts("\n"); wprint(here->srhs(statusbar)); puts("\n"); }
+	try { game.getMod("after")->run(); } catch(...) {}
 	Action* chosen;
 	if(game.actions.size()>1) chosen = selector.doPickAsk<Action*,VCLess<Action> >(game.actions,game.actions.begin()->first);
 	else chosen = game.actions.begin()->first;

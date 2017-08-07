@@ -239,12 +239,11 @@ str& str::trimMe() {
   return *this;
 }
 const char* str::trim() {
-  if(!cstr[0]) return str();
+  if(!cstr[0]) return "";
   int lshift = 0, rshift = 0;
   char* p = cstr;
   while(isspace9(*p)) ++lshift,++p;
-  while(*p) ++p;
-  p-= 1;
+  p+= length-1-lshift;
   while(isspace9(*p)) ++rshift,--p;
   int resultlen = length-lshift-rshift;
   strncpy(str::buffer, cstr+lshift, resultlen);

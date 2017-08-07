@@ -94,7 +94,8 @@ int VarContainer::findInt(const char* cline, int def) {
 
 str VarContainer::findStr(const char* cline, str def) {
 	xstr line = cline;
-  if(str text = line.movetext()) return text;
+  line.eat(" ");
+  if(line[0]=='"') return line.movetext();
   if(line.indexOf("[")>-1) return findStrArr(line,def);
 	VarInfo vi = getVar(line);
 	try {
@@ -150,7 +151,7 @@ void VarContainer::parseVar(str& line, char pass) {
 	  char fst = line[0];
     if(line.indexOf(":=")==-1) throw report("VarContainer::parseVar()" E_BADSYNTAX D_VAR,-line);
     line.explodeMe(":=");
-    xstr lhs = line(0), rhs = line(1);
+    lhs = line(0), rhs = line(1);
     VarInfo L = getVar(lhs);
     if(L.type=='@') L.context->ints[L.name] = irhs(rhs);
     else if(L.type=='~') L.context->strs[L.name] = findStr(rhs);
@@ -163,6 +164,13 @@ void VarContainer::parseVar(str& line, char pass) {
       }
       else if(rhs.eat("from ")) L.context->objs[L.name] = g->fromMod(rhs);
       else L.context->objs[L.name] = findObj(rhs);
+    }
+    // add loaded data to saver
+    if(g->loading) {
+      lhs.markTo(0);
+      VarInfo L = getVar(lhs);
+      if(line.cstr[0]=='.') lhs-= L.context->id;
+      g->saver.vars[lhs] = rhs;
     }
   }
 }

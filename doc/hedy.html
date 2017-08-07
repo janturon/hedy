@@ -267,8 +267,12 @@ Plocha místnosti 'Místnost 2' je <span class="L">30</span>.
   $here:= gameover
 </code>
 
-<p>Mod <b>init</b> (pokud je napsán) se spustí automaticky na začátku hry.
-<p>Mod <b>update</b> (pokud je napsán) se spustí automaticky před každým vypsáním uzlu.
+<p>Následující mody jsou spouštěny automaticky:
+<li><tt>init</tt> po načtení hry před zobrazením intra; po něm je spuštěn interní mod <tt>_load</tt>, viz ukládání hry
+<li><tt>update</tt> před každým načtením scény (může změnit proměnnou $here) a před vymazáním textu z předchozího uzlu
+<li><tt>before</tt> po změně proměnné $here, po vymazání textu, před zobrazením textu uzlu
+<li><tt>after</tt> po zobrazení textu uzlu a statusbaru, před zobrazením nabídky akcí
+
 <p>Ukazatel na mod je možné vytvořit pomocí textu:
 <code class="light">$report:= <span class="G">"Hello"</span></code>
 <p>Zde se vytvoří anonymní mod (se jménem <tt>_tmodX</tt>, kde <tt>X</tt> je číslo rostoucí od 1), který obsahuje jediný příkaz <tt>message</tt>, který obsahuje zadaný text (zde message "Hello").
@@ -386,6 +390,12 @@ filter(L operace R)
   <li><tt>L</tt> je <b>lokální</b> proměnná ukazatele z výběru (její kontext je vždy nastaven na procházenou položku)
   <li><tt>operace</tt> je <kbd>></kbd>, <kbd>&lt;</kbd> nebo (nejčastěji) <kbd>=</kbd>
   <li><tt>R</tt> je <b>pravá strana</b> popsaná u příkazu <b>if - then</b>.
+</ul>
+
+<p>Při filtrování polí může být <tt>L</tt> jedno z následujících:
+<ul>
+  <li><tt>@key</tt> (klíč u číselných polí), <tt>~key</tt> (textová pole), <tt>$key</tt> (objektová pole)
+  <li><tt>~val</tt> hodnota pole (vždy je textová)
 </ul>
 
 <p>SELEKTOR vybere jeden ukazatel z výběru. Je nepovinný, pokud chybí, vybere se náhodný ukazatel z výběru. SELEKTORy mohou být:
