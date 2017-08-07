@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
 
 	// run init and load
 	try { game.getMod("init")->run(); } catch(...) {}
-	try { game.getMod("__load")->run(); } catch(...) {}
+	try { game.getMod("_load")->run(); } catch(...) {}
 
 	// show intro
 	if(game.intro) try {
